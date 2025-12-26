@@ -80,7 +80,7 @@ toggle.Font = Enum.Font.SourceSansBold
 toggle.TextSize = 20
 toggle.TextColor3 = Color3.new(1,1,1)
 toggle.Text = "" -- removed text
-toggle.BackgroundColor3 = Color3.fromRGB(255,0,0) -- red off by default
+toggle.BackgroundColor3 = Color3.fromRGB(255,0,0) -- red by default
 toggle.Parent = row
 Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
