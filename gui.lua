@@ -79,14 +79,18 @@ toggle.Position = UDim2.new(1,-50,0.5,-20)
 toggle.Font = Enum.Font.SourceSansBold
 toggle.TextSize = 20
 toggle.TextColor3 = Color3.new(1,1,1)
-toggle.BackgroundColor3 = Color3.fromRGB(255,0,0)
+toggle.Text = "" -- removed text
+toggle.BackgroundColor3 = Color3.fromRGB(255,0,0) -- red off by default
 toggle.Parent = row
 Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
-local mini = Instance.new("ImageButton")
+local mini = Instance.new("TextButton")
 mini.Size = UDim2.new(0,50,0,50)
 mini.Position = UDim2.new(0,50,0,50)
-mini.Image = "rbxassetid://13638979838" -- replace with a proper Roblox asset ID for your icon
+mini.BackgroundColor3 = Color3.fromRGB(0,0,0)
+mini.Text = "🌌"
+mini.TextScaled = true
+mini.TextColor3 = Color3.fromRGB(255,255,255)
 mini.Visible = false
 mini.Parent = gui
 Instance.new("UICorner", mini).CornerRadius = UDim.new(0,12)
@@ -121,14 +125,14 @@ end)
 local function makeDraggable(frame)
     local dragging, dragStart, startPos
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
             frame.Position = UDim2.new(
                 startPos.X.Scale, startPos.X.Offset + delta.X,
@@ -137,7 +141,7 @@ local function makeDraggable(frame)
         end
     end)
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
         end
     end)
