@@ -76,72 +76,71 @@ label.Parent = row
 local toggle = Instance.new("TextButton")
 toggle.Size = UDim2.new(0,40,0,40)
 toggle.Position = UDim2.new(1,-50,0.5,-20)
-toggle.Text = "ON"
 toggle.Font = Enum.Font.SourceSansBold
 toggle.TextSize = 20
 toggle.TextColor3 = Color3.new(1,1,1)
-toggle.BackgroundColor3 = Color3.fromRGB(128,0,128)
+toggle.BackgroundColor3 = Color3.fromRGB(255,0,0)
 toggle.Parent = row
 Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
 local mini = Instance.new("ImageButton")
 mini.Size = UDim2.new(0,50,0,50)
 mini.Position = UDim2.new(0,50,0,50)
-mini.Image = "https://raw.githubusercontent.com/Itzsplicez/script/main/icon.png"
+mini.Image = "rbxassetid://13638979838" -- replace with a proper Roblox asset ID for your icon
 mini.Visible = false
 mini.Parent = gui
 Instance.new("UICorner", mini).CornerRadius = UDim.new(0,12)
 
 local infJumpEnabled = false
 toggle.MouseButton1Click:Connect(function()
-	infJumpEnabled = not infJumpEnabled
-	if infJumpEnabled then
-		toggle.BackgroundColor3 = Color3.fromRGB(160,0,160)
-		jumpModule.Enable()
-	else
-		toggle.BackgroundColor3 = Color3.fromRGB(128,0,128)
-		jumpModule.Disable()
-	end
+    infJumpEnabled = not infJumpEnabled
+    if infJumpEnabled then
+        toggle.BackgroundColor3 = Color3.fromRGB(0,255,0)
+        jumpModule.Enable()
+    else
+        toggle.BackgroundColor3 = Color3.fromRGB(255,0,0)
+        jumpModule.Disable()
+    end
 end)
 
 minimizeBtn.MouseButton1Click:Connect(function()
-	main.Visible = false
-	mini.Visible = true
+    main.Visible = false
+    mini.Visible = true
 end)
 
 mini.MouseButton1Click:Connect(function()
-	main.Visible = true
-	mini.Visible = false
+    main.Visible = true
+    mini.Visible = false
 end)
 
 unloadBtn.MouseButton1Click:Connect(function()
-	jumpModule.Disable()
-	gui:Destroy()
+    jumpModule.Disable()
+    gui:Destroy()
 end)
 
 local function makeDraggable(frame)
-	local dragging, dragStart, startPos
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(
-				startPos.X.Scale, startPos.X.Offset + delta.X,
-				startPos.Y.Scale, startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-	UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-		end
-	end)
+    local dragging, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                startPos.X.Scale, startPos.X.Offset + delta.X,
+                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
 end
 
 makeDraggable(main)
