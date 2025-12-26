@@ -22,7 +22,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -100, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 10)
 title.BackgroundTransparency = 1
-title.Text = "Milky Way Terminal"
+title.Text = "MilkyWay Terminal"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 26
@@ -146,13 +146,23 @@ end
 makeDraggable(main)
 makeDraggable(mini)
 
--- Command execution with /off support
+-- Command list in alphabetical order
+local commands = {
+    "/fly",
+    "/help",
+    "/jump",
+    "/noclip",
+    "/reset",
+    "/speed",
+}
+
+-- Command execution
 inputBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local text = inputBox.Text:lower():gsub("^%s*(.-)%s*$", "%1")
         local cmd, arg = text:match("^(%S+)%s*(%S*)$")
 
-        if cmd == "jump" then
+        if cmd == "/jump" then
             if arg == "off" then
                 if jumpModule then jumpModule.Disable() end
                 printToTerminal("InfJump disabled")
@@ -160,9 +170,8 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 if jumpModule then jumpModule.Enable() end
                 printToTerminal("InfJump enabled")
             end
-        elseif cmd == "speed" then
+        elseif cmd == "/speed" then
             if arg == "off" then
-                -- Reset walkspeed to default
                 local char = player.Character
                 if char and char:FindFirstChild("Humanoid") then
                     char.Humanoid.WalkSpeed = 16
@@ -174,7 +183,7 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 end)
                 printToTerminal("Speed script executed")
             end
-        elseif cmd == "noclip" then
+        elseif cmd == "/noclip" then
             if arg == "off" then
                 printToTerminal("Noclip disabled (manual stop required)")
             else
@@ -183,7 +192,7 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 end)
                 printToTerminal("Noclip script executed")
             end
-        elseif cmd == "fly" then
+        elseif cmd == "/fly" then
             if arg == "off" then
                 printToTerminal("Fly disabled (manual stop required)")
             else
@@ -192,7 +201,7 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 end)
                 printToTerminal("Fly script executed")
             end
-        elseif cmd == "reset" then
+        elseif cmd == "/reset" then
             if arg == "off" then
                 printToTerminal("Reset cannot be turned off")
             else
@@ -202,7 +211,11 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 printToTerminal("Reset script executed")
             end
         elseif cmd == "/help" then
-            printToTerminal("Commands: jump, speed, noclip, fly, reset, /help. Add 'off' to disable, e.g., 'jump off'")
+            printToTerminal("Available commands:")
+            for _, v in ipairs(commands) do
+                printToTerminal("  "..v)
+            end
+            printToTerminal("To turn off a command, type /command off (if supported)")
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
@@ -211,4 +224,4 @@ inputBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
-print("Milky Way Terminal loaded successfully")
+print("MilkyWay Terminal loaded successfully")
