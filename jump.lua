@@ -1,6 +1,4 @@
 -- jump.lua
--- Infinite Jump Module
-
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
@@ -8,9 +6,8 @@ local jumpModule = {}
 local infJumpEnabled = false
 local connection = nil
 
-function jumpModule.Enable()
+local function setup()
     if connection then return end
-    infJumpEnabled = true
     connection = UserInputService.JumpRequest:Connect(function()
         if infJumpEnabled then
             local char = Players.LocalPlayer.Character
@@ -21,12 +18,21 @@ function jumpModule.Enable()
     end)
 end
 
+function jumpModule.Enable()
+    infJumpEnabled = true
+    setup()
+end
+
 function jumpModule.Disable()
     infJumpEnabled = false
-    if connection then
-        connection:Disconnect()
-        connection = nil
-    end
 end
+
+-- Auto-setup on respawn
+Players.LocalPlayer.CharacterAdded:Connect(function()
+    wait(0.1)
+    if infJumpEnabled then
+        setup()
+    end
+end)
 
 return jumpModule
