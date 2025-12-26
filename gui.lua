@@ -17,8 +17,8 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 360, 0, 320) -- increased height to fit new buttons
-main.Position = UDim2.new(0.5, -180, 0.5, -160)
+main.Size = UDim2.new(0, 360, 0, 300)
+main.Position = UDim2.new(0.5, -180, 0.5, -150)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
@@ -58,15 +58,28 @@ unloadBtn.BackgroundColor3 = Color3.fromRGB(128,0,128)
 unloadBtn.Parent = main
 Instance.new("UICorner", unloadBtn).CornerRadius = UDim.new(0,8)
 
+-- Scrollable frame for buttons
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -60)
+scrollFrame.Position = UDim2.new(0,10,0,50)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.CanvasSize = UDim2.new(0,0,0,0)
+scrollFrame.Parent = main
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0,10)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = scrollFrame
+
 -- Function to create a button row
-local function createButtonRow(text, posY)
+local function createButtonRow(text)
     local row = Instance.new("Frame")
-    row.Size = UDim2.new(1,-20,0,50)
-    row.Position = UDim2.new(0,10,0,posY)
+    row.Size = UDim2.new(1,0,0,50)
     row.BackgroundColor3 = Color3.fromRGB(35,35,35)
-    row.Parent = main
+    row.Parent = scrollFrame
     Instance.new("UICorner", row).CornerRadius = UDim.new(0,10)
-    
+
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1,-70,1,0)
     label.Position = UDim2.new(0,15,0,0)
@@ -85,15 +98,15 @@ local function createButtonRow(text, posY)
     toggle.Font = Enum.Font.SourceSansBold
     toggle.TextSize = 20
     toggle.TextColor3 = Color3.new(1,1,1)
-    toggle.BackgroundColor3 = Color3.fromRGB(255,0,0) -- red by default
+    toggle.BackgroundColor3 = Color3.fromRGB(255,0,0)
     toggle.Parent = row
     Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 
     return toggle
 end
 
--- InfJump row
-local infJumpToggle = createButtonRow("InfJump", 70)
+-- InfJump
+local infJumpToggle = createButtonRow("InfJump")
 local infJumpEnabled = false
 infJumpToggle.MouseButton1Click:Connect(function()
     infJumpEnabled = not infJumpEnabled
@@ -106,13 +119,13 @@ infJumpToggle.MouseButton1Click:Connect(function()
     end
 end)
 
--- New buttons
-local speedToggle = createButtonRow("Speed", 130)
-local noclipToggle = createButtonRow("Noclip", 190)
-local flyToggle = createButtonRow("Fly", 250)
-local resetToggle = createButtonRow("Reset", 310)
+-- Other buttons
+local speedToggle = createButtonRow("Speed")
+local noclipToggle = createButtonRow("Noclip")
+local flyToggle = createButtonRow("Fly")
+local resetToggle = createButtonRow("Reset")
 
--- Connect new buttons to scripts
+-- Connect buttons to scripts
 speedToggle.MouseButton1Click:Connect(function()
     pcall(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/speed.lua"))()
@@ -189,4 +202,10 @@ end
 makeDraggable(main)
 makeDraggable(mini)
 
-print("Milky Way V1 GUI with 4 new buttons loaded successfully")
+-- Update canvas size automatically
+scrollFrame:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(function()
+    scrollFrame.CanvasSize = UDim2.new(0,0,0,scrollFrame.UIListLayout.AbsoluteContentSize.Y)
+end)
+scrollFrame.CanvasSize = UDim2.new(0,0,0,scrollFrame.UIListLayout.AbsoluteContentSize.Y)
+
+print("Milky Way V1 GUI with scrollable buttons loaded successfully")
