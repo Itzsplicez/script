@@ -146,38 +146,67 @@ end
 makeDraggable(main)
 makeDraggable(mini)
 
--- Command execution
+-- Command execution with /off support
 inputBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
-        local cmd = inputBox.Text:lower():gsub("%s+","")
-        if cmd == "jump" and jumpModule then
-            jumpModule.Enable()
-            printToTerminal("InfJump enabled")
+        local text = inputBox.Text:lower():gsub("^%s*(.-)%s*$", "%1")
+        local cmd, arg = text:match("^(%S+)%s*(%S*)$")
+
+        if cmd == "jump" then
+            if arg == "off" then
+                if jumpModule then jumpModule.Disable() end
+                printToTerminal("InfJump disabled")
+            else
+                if jumpModule then jumpModule.Enable() end
+                printToTerminal("InfJump enabled")
+            end
         elseif cmd == "speed" then
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/speed.lua"))()
-            end)
-            printToTerminal("Speed script executed")
+            if arg == "off" then
+                -- Reset walkspeed to default
+                local char = player.Character
+                if char and char:FindFirstChild("Humanoid") then
+                    char.Humanoid.WalkSpeed = 16
+                end
+                printToTerminal("Speed reset to default")
+            else
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/speed.lua"))()
+                end)
+                printToTerminal("Speed script executed")
+            end
         elseif cmd == "noclip" then
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
-            end)
-            printToTerminal("Noclip script executed")
+            if arg == "off" then
+                printToTerminal("Noclip disabled (manual stop required)")
+            else
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
+                end)
+                printToTerminal("Noclip script executed")
+            end
         elseif cmd == "fly" then
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fly.lua"))()
-            end)
-            printToTerminal("Fly script executed")
+            if arg == "off" then
+                printToTerminal("Fly disabled (manual stop required)")
+            else
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fly.lua"))()
+                end)
+                printToTerminal("Fly script executed")
+            end
         elseif cmd == "reset" then
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/reset.lua"))()
-            end)
-            printToTerminal("Reset script executed")
+            if arg == "off" then
+                printToTerminal("Reset cannot be turned off")
+            else
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/reset.lua"))()
+                end)
+                printToTerminal("Reset script executed")
+            end
         elseif cmd == "/help" then
-            printToTerminal("Available commands: jump, speed, noclip, fly, reset, /help")
+            printToTerminal("Commands: jump, speed, noclip, fly, reset, /help. Add 'off' to disable, e.g., 'jump off'")
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
+
         inputBox.Text = ""
     end
 end)
