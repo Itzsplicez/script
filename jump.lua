@@ -1,4 +1,3 @@
--- jump.lua
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
@@ -27,7 +26,6 @@ function jumpModule.Disable()
     infJumpEnabled = false
 end
 
--- Auto-setup on respawn
 Players.LocalPlayer.CharacterAdded:Connect(function()
     wait(0.1)
     if infJumpEnabled then
