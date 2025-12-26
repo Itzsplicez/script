@@ -1,9 +1,9 @@
--- Fly module
+-- Fly module with shift lock support
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
+
 local flyModule = {}
 local flying = false
 local flySpeed = 50
@@ -19,13 +19,15 @@ local function startFly()
     local cam = workspace.CurrentCamera
 
     local velocity = Instance.new("BodyVelocity")
-    velocity.MaxForce = Vector3.new(400000,400000,400000)
+    velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
     velocity.Velocity = Vector3.new(0,0,0)
     velocity.Parent = hrp
 
     flyConnection = RunService.RenderStepped:Connect(function()
         if not flying then return end
         local direction = Vector3.new(0,0,0)
+
+        -- Movement input
         if UserInputService:IsKeyDown(Enum.KeyCode.W) then
             direction = direction + cam.CFrame.LookVector
         end
@@ -45,11 +47,16 @@ local function startFly()
             direction = direction - Vector3.new(0,1,0)
         end
 
-        if direction.Magnitude > 0 then
-            direction = direction.Unit * flySpeed
+        -- Apply shift lock camera
+        if player.CameraMode == Enum.CameraMode.LockFirstPerson or player.CameraMode == Enum.CameraMode.Classic then
+            direction = Vector3.new(direction.X, direction.Y, direction.Z)
         end
 
-        velocity.Velocity = direction
+        if direction.Magnitude > 0 then
+            velocity.Velocity = direction.Unit * flySpeed
+        else
+            velocity.Velocity = Vector3.new(0,0,0)
+        end
     end)
 end
 
