@@ -2,10 +2,12 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
+-- Load jump module
 local success, jumpModule = pcall(function()
     return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/jump.lua"))()
 end)
 
+-- GUI setup
 local gui = Instance.new("ScreenGui")
 gui.Name = "MilkyWayV1"
 gui.ResetOnSpawn = false
@@ -93,6 +95,7 @@ inputBox.BackgroundColor3 = Color3.fromRGB(255,255,255)
 inputBox.Parent = main
 Instance.new("UICorner", inputBox).CornerRadius = UDim.new(0,8)
 
+-- Mini button
 local mini = Instance.new("TextButton")
 mini.Size = UDim2.new(0,50,0,50)
 mini.Position = UDim2.new(0,50,0,50)
@@ -118,6 +121,7 @@ unloadBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
+-- Draggable
 local function makeDraggable(frame)
     local dragging, dragStart, startPos
     frame.InputBegan:Connect(function(input)
@@ -146,8 +150,9 @@ end
 makeDraggable(main)
 makeDraggable(mini)
 
--- Command list in alphabetical order
+-- Command list in alphabetical order (except /clear at top)
 local commands = {
+    "/clear",
     "/fly",
     "/help",
     "/jump",
@@ -156,13 +161,20 @@ local commands = {
     "/speed",
 }
 
--- Command execution
+-- Terminal command execution
 inputBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local text = inputBox.Text:lower():gsub("^%s*(.-)%s*$", "%1")
         local cmd, arg = text:match("^(%S+)%s*(%S*)$")
 
-        if cmd == "/jump" then
+        if cmd == "/clear" then
+            for _, child in ipairs(outputFrame:GetChildren()) do
+                if child:IsA("TextLabel") then child:Destroy() end
+            end
+            outputFrame.CanvasPosition = Vector2.new(0,0)
+            printToTerminal("Terminal cleared")
+
+        elseif cmd == "/jump" then
             if arg == "off" then
                 if jumpModule then jumpModule.Disable() end
                 printToTerminal("InfJump disabled")
@@ -170,19 +182,26 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 if jumpModule then jumpModule.Enable() end
                 printToTerminal("InfJump enabled")
             end
+
         elseif cmd == "/speed" then
+            local char = player.Character
             if arg == "off" then
-                local char = player.Character
                 if char and char:FindFirstChild("Humanoid") then
-                    char.Humanoid.WalkSpeed = 16
+                    char.Humanoid.WalkSpeed = 20
                 end
-                printToTerminal("Speed reset to default")
+                printToTerminal("Speed reset to default (20)")
             else
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/speed.lua"))()
-                end)
-                printToTerminal("Speed script executed")
+                local num = tonumber(arg)
+                if num and num >= 1 and num <= 100 then
+                    if char and char:FindFirstChild("Humanoid") then
+                        char.Humanoid.WalkSpeed = num
+                    end
+                    printToTerminal("Speed set to "..num)
+                else
+                    printToTerminal("Invalid speed! Use /speed 1-100")
+                end
             end
+
         elseif cmd == "/noclip" then
             if arg == "off" then
                 printToTerminal("Noclip disabled (manual stop required)")
@@ -190,8 +209,9 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 pcall(function()
                     loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
                 end)
-                printToTerminal("Noclip script executed")
+                printToTerminal("Noclip enabled")
             end
+
         elseif cmd == "/fly" then
             if arg == "off" then
                 printToTerminal("Fly disabled (manual stop required)")
@@ -199,8 +219,9 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 pcall(function()
                     loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fly.lua"))()
                 end)
-                printToTerminal("Fly script executed")
+                printToTerminal("Fly enabled")
             end
+
         elseif cmd == "/reset" then
             if arg == "off" then
                 printToTerminal("Reset cannot be turned off")
@@ -208,14 +229,16 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 pcall(function()
                     loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/reset.lua"))()
                 end)
-                printToTerminal("Reset script executed")
+                printToTerminal("Reset executed")
             end
+
         elseif cmd == "/help" then
             printToTerminal("Available commands:")
             for _, v in ipairs(commands) do
                 printToTerminal("  "..v)
             end
             printToTerminal("To turn off a command, type /command off (if supported)")
+
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
