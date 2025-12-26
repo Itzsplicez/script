@@ -1,10 +1,9 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 local jumpModule = {}
 local enabled = false
-local jumpConn
+local jumpConnection
 
 local function forceJump()
     local character = player.Character
@@ -12,7 +11,6 @@ local function forceJump()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local hrp = character:FindFirstChild("HumanoidRootPart")
     if humanoid and hrp then
-        -- This applies upward velocity, allowing jumps mid-air
         hrp.Velocity = Vector3.new(hrp.Velocity.X, 60, hrp.Velocity.Z)
         humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
@@ -22,19 +20,22 @@ function jumpModule.Enable()
     if enabled then return end
     enabled = true
 
-    -- Connect to Heartbeat to force jump every frame if enabled (works better cross-device)
-    jumpConn = RunService.Heartbeat:Connect(function()
-        if enabled then
-            forceJump()
-        end
-    end)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        jumpConnection = humanoid.Jumping:Connect(function(active)
+            if enabled and active then
+                forceJump()
+            end
+        end)
+    end
 end
 
 function jumpModule.Disable()
     enabled = false
-    if jumpConn then
-        jumpConn:Disconnect()
-        jumpConn = nil
+    if jumpConnection then
+        jumpConnection:Disconnect()
+        jumpConnection = nil
     end
 end
 
