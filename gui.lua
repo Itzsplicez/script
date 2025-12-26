@@ -71,7 +71,17 @@ function flyModule.Stop()
     end
 end
 
--- GUI setup
+-- Load noclip module (separate ModuleScript in ReplicatedStorage or PlayerScripts)
+local noclipModule
+local noclipSuccess, noclipModuleTemp = pcall(function()
+    -- Replace this path with where your noclip module actually is
+    return require(game:GetService("ReplicatedStorage"):WaitForChild("noclip"))
+end)
+if noclipSuccess then
+    noclipModule = noclipModuleTemp
+end
+
+-- GUI setup (same as your existing)
 local gui = Instance.new("ScreenGui")
 gui.Name = "MilkyWayV1"
 gui.ResetOnSpawn = false
@@ -183,6 +193,7 @@ end)
 unloadBtn.MouseButton1Click:Connect(function()
     if jumpModule then jumpModule.Disable() end
     flyModule.Stop()
+    if noclipModule then noclipModule.Disable() end
     gui:Destroy()
 end)
 
@@ -280,12 +291,13 @@ inputBox.FocusLost:Connect(function(enterPressed)
             end
 
         elseif cmd == "/noclip" then
-            if arg == "off" then
-                printToTerminal("Noclip disabled (manual stop required)")
+            if not noclipModule then
+                printToTerminal("Noclip module not found")
+            elseif arg == "off" then
+                noclipModule.Disable()
+                printToTerminal("Noclip disabled")
             else
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
-                end)
+                noclipModule.Enable()
                 printToTerminal("Noclip enabled")
             end
 
