@@ -2,19 +2,12 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
-local jumpModule = {}
-local enabled = false
-
-function jumpModule.Enable() enabled = true end
-function jumpModule.Disable() enabled = false end
-function jumpModule.Jump()
-	if enabled then
-		local char = player.Character
-		local hrp = char and char:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			hrp.Velocity = Vector3.new(hrp.Velocity.X, 60, hrp.Velocity.Z)
-		end
-	end
+local success, jumpModule = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/index/jump.lua"))()
+end)
+if not success then
+    warn("Failed to load jump.lua")
+    return
 end
 
 local gui = Instance.new("ScreenGui")
@@ -94,7 +87,7 @@ Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,8)
 local mini = Instance.new("ImageButton")
 mini.Size = UDim2.new(0,50,0,50)
 mini.Position = UDim2.new(0,50,0,50)
-mini.Image = "rbxassetid://INSERT_ICON_ID_HERE"
+mini.Image = "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/index/icon.png"
 mini.Visible = false
 mini.Parent = gui
 Instance.new("UICorner", mini).CornerRadius = UDim.new(0,12)
@@ -154,4 +147,4 @@ end
 makeDraggable(main)
 makeDraggable(mini)
 
-print("Milky Way V1 loaded successfully")
+print("Milky Way V1 GUI loaded successfully")
