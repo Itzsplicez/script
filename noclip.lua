@@ -7,24 +7,27 @@ local noclipEnabled = false
 local noclipConnection
 local descendantConnection
 
+-- Helper to safely get the player's character
 local function getCharacter()
     return player.Character or player.CharacterAdded:Wait()
 end
 
+-- Start noclip
 local function startNoclip()
     if noclipEnabled then return end
     noclipEnabled = true
 
     local char = getCharacter()
+    if not char then return end
 
-    -- Disable collisions for existing parts
+    -- Disable collisions for all current parts
     for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
         end
     end
 
-    -- Keep collisions disabled while moving
+    -- Continuously disable collisions during movement
     noclipConnection = RunService.Stepped:Connect(function()
         if not char or not char.Parent then return end
         for _, part in ipairs(char:GetDescendants()) do
@@ -42,6 +45,7 @@ local function startNoclip()
     end)
 end
 
+-- Stop noclip
 local function stopNoclip()
     if not noclipEnabled then return end
     noclipEnabled = false
@@ -58,6 +62,8 @@ local function stopNoclip()
 
     local char = player.Character
     if not char then return end
+
+    -- Re-enable collisions for all parts
     for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = true
@@ -65,7 +71,7 @@ local function stopNoclip()
     end
 end
 
--- Return module for terminal
+-- Module interface
 local module = {}
 module.Enable = startNoclip
 module.Disable = stopNoclip
