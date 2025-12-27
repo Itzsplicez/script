@@ -279,15 +279,26 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 printToTerminal("Invalid fly speed! Use /fly 1-100 or /fly off")
             end
 
-        elseif cmd == "/noclip" then
-            if arg == "off" then
-                printToTerminal("Noclip disabled (manual stop required)")
-            else
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
-                end)
-                printToTerminal("Noclip enabled")
-            end
+elseif cmd == "/noclip" then
+    if arg == "off" then
+        if _G.ToggleNoclip then
+            _G.ToggleNoclip(false)
+            printToTerminal("Noclip disabled")
+        else
+            printToTerminal("Noclip is not running")
+        end
+    else
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
+        end)
+
+        if _G.ToggleNoclip then
+            _G.ToggleNoclip(true)
+        end
+
+        printToTerminal("Noclip enabled")
+    end
+end
 
         elseif cmd == "/reset" then
             if arg == "off" then
