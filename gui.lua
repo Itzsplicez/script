@@ -462,9 +462,8 @@ elseif cmd == "/float" then
     end
 
 elseif cmd == "/tacos" then
-    -- Persistent state
+    -- Persistent module
     if not _G.TacoModule then
-        -- Define the taco module inside the command
         local Players = game:GetService("Players")
         local RunService = game:GetService("RunService")
         local player = Players.LocalPlayer
@@ -472,6 +471,15 @@ elseif cmd == "/tacos" then
         local TacoModule = {}
         local tacoSound
         local heartbeatConnection
+
+        -- Make sure the sound attaches to the current character
+        local function getHRP()
+            local char = player.Character
+            if char then
+                return char:FindFirstChild("HumanoidRootPart")
+            end
+            return nil
+        end
 
         function TacoModule.Stop()
             if tacoSound then
@@ -486,10 +494,13 @@ elseif cmd == "/tacos" then
         end
 
         function TacoModule.Play()
-            TacoModule.Stop()
+            TacoModule.Stop() -- stop previous if exists
 
-            local char = player.Character or player.CharacterAdded:Wait()
-            local hrp = char:WaitForChild("HumanoidRootPart")
+            local hrp = getHRP()
+            if not hrp then
+                -- Wait for character
+                hrp = player.CharacterAdded:Wait():WaitForChild("HumanoidRootPart")
+            end
 
             tacoSound = Instance.new("Sound")
             tacoSound.SoundId = "rbxassetid://142376088"
@@ -507,16 +518,27 @@ elseif cmd == "/tacos" then
             tacoSound:Play()
         end
 
-        -- Store globally so we can access it later
+        -- Store globally
         _G.TacoModule = TacoModule
         _G.tacoPlaying = false
+
+        -- Stop the sound automatically if player respawns
+        player.CharacterAdded:Connect(function(char)
+            if _G.tacoPlaying and _G.TacoModule then
+                -- Delay to let HRP exist
+                char:WaitForChild("HumanoidRootPart")
+                _G.TacoModule.Play()
+            end
+        end)
     end
 
-    -- Toggle the taco sound
+    -- Toggle sound
     if arg == "off" then
-        _G.TacoModule.Stop()
-        _G.tacoPlaying = false
-        printToTerminal("Raining Tacos stopped")
+        if _G.TacoModule then
+            _G.TacoModule.Stop()
+            _G.tacoPlaying = false
+            printToTerminal("Raining Tacos stopped")
+        end
     else
         if not _G.tacoPlaying then
             _G.TacoModule.Play()
@@ -526,6 +548,7 @@ elseif cmd == "/tacos" then
             printToTerminal("Raining Tacos already playing")
         end
     end
+
 
                 
         else
