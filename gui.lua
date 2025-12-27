@@ -183,51 +183,6 @@ local function printToTerminal(text)
     outputFrame.CanvasPosition = Vector2.new(0, outputFrame.CanvasSize.Y.Offset)
 end
 
-local function executeCommand(cmdText)
-    local text = cmdText:lower():gsub("^%s*(.-)%s*$", "%1")
-    local cmd, arg = text:match("^(%S+)%s*(.-)$") -- note the pattern change to allow spaces in arg
-
-    if cmd == "/clear" then
-        for _, child in ipairs(outputFrame:GetChildren()) do
-            if child:IsA("TextLabel") then child:Destroy() end
-        end
-        outputFrame.CanvasPosition = Vector2.new(0,0)
-        printToTerminal("Terminal cleared")
-
-    elseif cmd == "/infjump" then
-        if arg == "off" then
-            if jumpModule then jumpModule.Disable() end
-            printToTerminal("InfJump disabled")
-        else
-            if jumpModule then jumpModule.Enable() end
-            printToTerminal("InfJump enabled")
-        end
-
-    elseif cmd == "/speed" then
-        local num = tonumber(arg)
-        local char = player.Character
-        if arg == "off" then
-            if char and char:FindFirstChild("Humanoid") then
-                char.Humanoid.WalkSpeed = 20
-            end
-            printToTerminal("Speed reset to default (20)")
-        elseif num and num >= 1 and num <= 100 then
-            if char and char:FindFirstChild("Humanoid") then
-                char.Humanoid.WalkSpeed = num
-            end
-            printToTerminal("Speed set to "..num)
-        else
-            printToTerminal("Invalid speed! Use /speed 1-100")
-        end
-
-    -- continue with all your other commands here...
-    elseif cmd == "/loop" then
-        -- ignore, handled separately
-    else
-        printToTerminal("Unknown command: "..cmdText)
-    end
-end
-
 -- Input box
 local inputBox = Instance.new("TextBox")
 inputBox.Size = UDim2.new(1, -20, 0, 40)
@@ -307,7 +262,7 @@ local commands = {
     "/help",
     "/infjump",
     "/jumpboost",
-    "/loop (command)",
+    "/loopspeed",
     "/noclip",
     "/reset",
     "/speed",
@@ -486,43 +441,32 @@ elseif cmd == "/teleport" then
             printToTerminal("Player not found: " .. arg)
         end
     end
-elseif cmd == "/loop" then
-    local loopText = arg  -- everything after "/loop "
-    if loopText:lower() == "off" then
-        -- stop all loops
-        for _, loopInfo in pairs(activeLoops) do
-            if loopInfo.Connection then loopInfo.Connection:Disconnect() end
-        end
-        activeLoops = {}
-        printToTerminal("All loops stopped")
+
+elseif cmd == "/loopspeed" then
+    local success, loopSpeedModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/loopspeed.lua"))()
+    end)
+
+    if not success or not loopSpeedModule then
+        printToTerminal("Failed to load Loopspeed module")
     else
-        -- stop existing loop for the same text
-        if activeLoops[loopText] then
-            if activeLoops[loopText].Connection then
-                activeLoops[loopText].Connection:Disconnect()
+        if arg == "off" then
+            if loopSpeedModule.Stop then
+                loopSpeedModule.Stop()
+                printToTerminal("Loopspeed stopped")
+            else
+                printToTerminal("Loopspeed module does not support Stop()")
             end
-            activeLoops[loopText] = nil
+        else
+            local num = tonumber(arg)
+            if num and loopSpeedModule.Start then
+                loopSpeedModule.Start(num)
+                printToTerminal("Loopspeed started at " .. num)
+            else
+                printToTerminal("Invalid speed! Use /loopspeed <number> or /loopspeed off")
+            end
         end
-
-        -- start looping
-        local conn
-        conn = RunService.Heartbeat:Connect(function()
-            if tick() - (activeLoops[loopText] and activeLoops[loopText].LastRun or 0) >= 1 then
-                -- Split loopText into cmd and arg properly
-                local lcmd, larg = loopText:match("^(%S+)%s*(.-)$")
-                if lcmd then
-                    executeCommand(lcmd.." "..larg)
-                end
-                activeLoops[loopText].LastRun = tick()
-            end
-        end)
-
-        activeLoops[loopText] = {Connection = conn, LastRun = 0}
-        printToTerminal("Loop started for: "..loopText)
     end
-
-
-
 
                 
         else
