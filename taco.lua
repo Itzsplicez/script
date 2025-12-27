@@ -22,7 +22,7 @@ end
 
 -- Plays the taco sound
 function TacoModule.Play()
-    TacoModule.Stop() -- stop existing if any
+    TacoModule.Stop() -- Stop any existing sound
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
@@ -34,7 +34,7 @@ function TacoModule.Play()
     tacoSound.PlaybackSpeed = 1
     tacoSound.Parent = hrp -- attach to player so it follows
 
-    -- Update sound position every frame (optional, but ensures it follows)
+    -- Update sound position every frame (optional)
     heartbeatConnection = RunService.Heartbeat:Connect(function()
         if tacoSound and hrp then
             tacoSound.Position = hrp.Position
