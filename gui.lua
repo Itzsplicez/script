@@ -448,25 +448,22 @@ elseif cmd == "/loopspeed" then
     end)
 
     if not success or not loopSpeedModule then
-        printToTerminal("Failed to load Loopspeed module")
+        printToTerminal("Failed to load loopspeed module")
     else
         if arg == "off" then
-            if loopSpeedModule.Stop then
-                loopSpeedModule.Stop()
-                printToTerminal("Loopspeed stopped")
-            else
-                printToTerminal("Loopspeed module does not support Stop()")
-            end
+            loopSpeedModule.Stop()
+            printToTerminal("Loopspeed disabled, speed reset to 16")
         else
-            local num = tonumber(arg)
-            if num and loopSpeedModule.Start then
-                loopSpeedModule.Start(num)
-                printToTerminal("Loopspeed started at " .. num)
+            local speedNum = tonumber(arg)
+            if speedNum and speedNum >= 1 and speedNum <= 500 then
+                loopSpeedModule.Start(speedNum)
+                printToTerminal("Loopspeed enabled at "..speedNum)
             else
-                printToTerminal("Invalid speed! Use /loopspeed <number> or /loopspeed off")
+                printToTerminal("Invalid loopspeed! Use /loopspeed 1-500 or /loopspeed off")
             end
         end
     end
+
 
                 
         else
