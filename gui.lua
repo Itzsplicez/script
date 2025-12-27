@@ -257,12 +257,13 @@ makeDraggable(mini)
 local commands = {
     "/clear",
     "/fly",
+    "/fling",
     "/help",
     "/infjump",
     "/noclip",
     "/reset",
     "/speed",
-    "/fling",
+    "/swim",
 }
 
 -- Terminal command execution
@@ -375,6 +376,26 @@ elseif cmd == "/fling" then
             end
         else
             printToTerminal("Player not found: "..arg)
+        end
+    end
+
+elseif cmd == "/swim" then
+    if arg == "off" then
+        if _G.ToggleSwim then
+            _G.ToggleSwim(false)
+            printToTerminal("Swim disabled")
+        else
+            printToTerminal("Swim module is not running")
+        end
+    else
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/swim.lua"))()
+        end)
+        if _G.ToggleSwim then
+            _G.ToggleSwim(true)
+            printToTerminal("Swim enabled")
+        else
+            printToTerminal("Swim module failed to load")
         end
     end
 
