@@ -16,7 +16,7 @@ local orbiting = false
 local orbitConnection
 
 -- Orbit settings
-local radius = 6
+local radius = 2
 local speed = 1
 local angle = 0
 
