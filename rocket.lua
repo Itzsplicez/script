@@ -14,8 +14,16 @@ function RocketModule.Start(player)
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
 
-    -- Lift player straight up to a high Y position
-    local targetHeight = hrp.Position.Y + 300 -- go 300 studs up
+    -- Countdown 3..2..1 said in chat
+    for i = 3,1,-1 do
+        if char:FindFirstChild("Head") then
+            ChatService:Chat(char.Head, tostring(i), Enum.ChatColor.Red)
+        end
+        wait(1)
+    end
+
+    -- Lift player straight up
+    local targetHeight = hrp.Position.Y + 300 -- lift 300 studs
     local speed = 200 -- studs per second
 
     liftConnection = RunService.RenderStepped:Connect(function(dt)
@@ -37,13 +45,13 @@ function RocketModule.Start(player)
         liftConnection = nil
     end
 
-    -- Make the character say BOOM in chat
-    if char and char:FindFirstChild("Head") then
+    -- Say BOOM in chat
+    if char:FindFirstChild("Head") then
         ChatService:Chat(char.Head, "BOOM!", Enum.ChatColor.Red)
     end
 
-    -- Reset the player
-    if char and char:FindFirstChild("Humanoid") then
+    -- Reset the player (simulate explosion)
+    if char:FindFirstChild("Humanoid") then
         char:BreakJoints()
     end
 
