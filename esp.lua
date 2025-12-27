@@ -6,8 +6,9 @@ local ESP = {}
 ESP.Active = false
 ESP.Boxes = {}
 ESP.Billboards = {}
+ESP.Connections = {} -- Humanoid.Died connections
 
--- Helper: Create BillboardGui for name
+-- Helper: Create BillboardGui for name only
 local function createLabel(plr, char)
     local hrp = char:WaitForChild("HumanoidRootPart")
 
@@ -49,20 +50,13 @@ local function createBoxes(char)
     return boxes
 end
 
--- Set up ESP for a single player
-local function setupESP(plr)
-    local char = plr.Character
-    if not char then return end
-
-    -- Create SelectionBoxes
-    ESP.Boxes[plr] = createBoxes(char)
-
-    -- Create Billboard
-    ESP.Billboards[plr] = createLabel(plr, char)
-end
-
 -- Remove ESP for a single player
 local function removeESP(plr)
+    if ESP.Connections[plr] then
+        ESP.Connections[plr]:Disconnect()
+        ESP.Connections[plr] = nil
+    end
+
     if ESP.Boxes[plr] then
         for _, box in pairs(ESP.Boxes[plr]) do
             box:Destroy()
@@ -73,6 +67,25 @@ local function removeESP(plr)
     if ESP.Billboards[plr] then
         ESP.Billboards[plr]:Destroy()
         ESP.Billboards[plr] = nil
+    end
+end
+
+-- Set up ESP for a single player
+local function setupESP(plr)
+    local char = plr.Character
+    if not char then return end
+
+    removeESP(plr) -- clean old ESP if any
+
+    ESP.Boxes[plr] = createBoxes(char)
+    ESP.Billboards[plr] = createLabel(plr, char)
+
+    -- Remove ESP when player dies
+    local humanoid = char:FindFirstChild("Humanoid")
+    if humanoid then
+        ESP.Connections[plr] = humanoid.Died:Connect(function()
+            removeESP(plr)
+        end)
     end
 end
 
@@ -91,10 +104,10 @@ function ESP.Toggle(state)
     end
 end
 
--- Auto-update for new players
+-- Automatically handle new players joining or respawning
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function(char)
-        if ESP.Active then
+        if ESP.Active and plr ~= Players.LocalPlayer then
             setupESP(plr)
         end
     end)
