@@ -602,23 +602,95 @@ elseif cmd == "/spin" then
         end
     end
 
-elseif cmd == "/orbit" then
-    local orbitModule = _G.OrbitModule or loadstring(
-        game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/orbit.lua")
-    )()
+elseif cmd == "/spectate" then
+    -- Create module once
+    if not _G.SpectateModule then
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local camera = workspace.CurrentCamera
 
+        local Spectate = {}
+        local spectating = false
+        local oldSubject
+        local target
+        local charConn
+        local removeConn
+
+        local function cleanup()
+            spectating = false
+
+            if charConn then
+                charConn:Disconnect()
+                charConn = nil
+            end
+
+            if removeConn then
+                removeConn:Disconnect()
+                removeConn = nil
+            end
+
+            if oldSubject then
+                camera.CameraSubject = oldSubject
+                camera.CameraType = Enum.CameraType.Custom
+            end
+
+            target = nil
+        end
+
+        local function setCamera(char)
+            local humanoid = char:WaitForChild("Humanoid", 5)
+            if humanoid then
+                camera.CameraType = Enum.CameraType.Custom
+                camera.CameraSubject = humanoid
+            end
+        end
+
+        function Spectate.Start(plr)
+            if not plr or plr == player then return end
+
+            cleanup()
+            spectating = true
+            target = plr
+            oldSubject = camera.CameraSubject
+
+            if plr.Character then
+                setCamera(plr.Character)
+            end
+
+            charConn = plr.CharacterAdded:Connect(function(char)
+                if spectating then
+                    setCamera(char)
+                end
+            end)
+
+            removeConn = Players.PlayerRemoving:Connect(function(leaving)
+                if leaving == plr then
+                    cleanup()
+                end
+            end)
+        end
+
+        function Spectate.Stop()
+            cleanup()
+        end
+
+        _G.SpectateModule = Spectate
+    end
+
+    -- Command logic
     if arg == "off" then
-        orbitModule.Stop()
-        printToTerminal("Orbit disabled")
+        _G.SpectateModule.Stop()
+        printToTerminal("Spectate disabled")
     else
-        local target = getPlayerFromArg(arg)
-        if target then
-            orbitModule.Start(target, 3, 6)
-            printToTerminal("Orbiting "..target.Name)
+        local targetPlayer = getPlayerFromArg(arg)
+        if targetPlayer then
+            _G.SpectateModule.Start(targetPlayer)
+            printToTerminal("Spectating " .. targetPlayer.Name)
         else
-            printToTerminal("Player not found: "..arg)
+            printToTerminal("Player not found: " .. arg)
         end
     end
+
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
