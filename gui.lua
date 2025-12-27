@@ -263,7 +263,7 @@ local commands = {
     "/noclip",
     "/reset",
     "/speed",
-    "/swim",
+    "/swimfly",
 }
 
 -- Terminal command execution
@@ -379,7 +379,7 @@ elseif cmd == "/fling" then
         end
     end
 
-elseif cmd == "/swim" then
+elseif cmd == "/swimfly" then
     if arg == "off" then
         if _G.ToggleSwim then
             _G.ToggleSwim(false)
