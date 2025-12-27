@@ -33,8 +33,14 @@ function LoopSpeedModule.Stop()
     if loopConnection then
         loopConnection:Disconnect()
         loopConnection = nil
-        print("Loopspeed stopped")
     end
+
+    -- Reset speed to default
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = 16
+    end
+
+    print("Loopspeed stopped and speed reset to 16")
 end
 
 return LoopSpeedModule
