@@ -9,6 +9,10 @@ local active = false
 local speed = 1
 local moveDir = Vector3.new(0,0,0)
 local connection
+local oldCameraType
+local oldCameraSubject
+local oldWalkSpeed, oldJumpPower
+local humanoid
 
 -- Helper to get movement input
 local function updateMoveDir()
@@ -40,9 +44,20 @@ function Freecam.Start(camSpeed)
     active = true
     speed = math.clamp(tonumber(camSpeed) or 1, 0.1, 10)
 
-    local oldSubject = camera.CameraSubject
-    local oldType = camera.CameraType
+    -- Disable player movement
+    local char = player.Character
+    if not char then return end
+    humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        oldWalkSpeed = humanoid.WalkSpeed
+        oldJumpPower = humanoid.JumpPower
+        humanoid.WalkSpeed = 0
+        humanoid.JumpPower = 0
+    end
 
+    -- Store camera
+    oldCameraType = camera.CameraType
+    oldCameraSubject = camera.CameraSubject
     camera.CameraType = Enum.CameraType.Scriptable
 
     connection = RunService.RenderStepped:Connect(function(dt)
@@ -52,18 +67,27 @@ function Freecam.Start(camSpeed)
             camera.CFrame = camera.CFrame + moveDir.Unit * speed
         end
     end)
-
-    Freecam.Stop = function()
-        active = false
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-        camera.CameraType = oldType
-        camera.CameraSubject = oldSubject
-    end
 end
 
-Freecam.Stop = function() end
+function Freecam.Stop()
+    if not active then return end
+    active = false
+
+    -- Restore player movement
+    if humanoid then
+        humanoid.WalkSpeed = oldWalkSpeed or 16
+        humanoid.JumpPower = oldJumpPower or 50
+    end
+
+    -- Restore camera
+    camera.CameraType = oldCameraType or Enum.CameraType.Custom
+    camera.CameraSubject = oldCameraSubject
+
+    -- Disconnect connection
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
 
 return Freecam
