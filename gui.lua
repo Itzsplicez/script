@@ -552,7 +552,7 @@ elseif cmd == "/tacos" then
 elseif cmd == "/rocket" then
     -- Load rocket module
     local success, RocketModule = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUsername/YourRepo/main/rocket.lua"))()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/rocket.lua"))()
     end)
 
     if not success or not RocketModule then
