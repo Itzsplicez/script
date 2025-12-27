@@ -182,6 +182,7 @@ end)
 
 unloadBtn.MouseButton1Click:Connect(function()
     if jumpModule then jumpModule.Disable() end
+    if _G.ToggleNoclip then _G.ToggleNoclip(false) end
     flyModule.Stop()
     gui:Destroy()
 end)
@@ -239,7 +240,7 @@ inputBox.FocusLost:Connect(function(enterPressed)
             outputFrame.CanvasPosition = Vector2.new(0,0)
             printToTerminal("Terminal cleared")
 
-        elseif cmd == "/Infjump" then
+        elseif cmd == "/infjump" then
             if arg == "off" then
                 if jumpModule then jumpModule.Disable() end
                 printToTerminal("InfJump disabled")
@@ -279,26 +280,21 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 printToTerminal("Invalid fly speed! Use /fly 1-100 or /fly off")
             end
 
-elseif cmd == "/noclip" then
-    if arg == "off" then
-        if _G.ToggleNoclip then
-            _G.ToggleNoclip(false)
-            printToTerminal("Noclip disabled")
-        else
-            printToTerminal("Noclip is not running")
-        end
-    else
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
-        end)
-
-        if _G.ToggleNoclip then
-            _G.ToggleNoclip(true)
-        end
-
-        printToTerminal("Noclip enabled")
-    end
-end
+        elseif cmd == "/noclip" then
+            if arg == "off" then
+                if _G.ToggleNoclip then
+                    _G.ToggleNoclip(false)
+                    printToTerminal("Noclip disabled")
+                else
+                    printToTerminal("Noclip is not running")
+                end
+            else
+                pcall(function()
+                    loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/noclip.lua"))()
+                end)
+                if _G.ToggleNoclip then _G.ToggleNoclip(true) end
+                printToTerminal("Noclip enabled")
+            end
 
         elseif cmd == "/reset" then
             if arg == "off" then
