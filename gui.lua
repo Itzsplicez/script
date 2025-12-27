@@ -267,6 +267,7 @@ local commands = {
     "/jumpboost",
     "/noclip",
     "/reset",
+    "/spin",
     "/speed",
     "/teleport",
     "/tacos",
