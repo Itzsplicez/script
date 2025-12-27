@@ -1,6 +1,7 @@
 -- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local activeLoops = {}
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 -- Player finder with autocomplete / partial match
@@ -261,6 +262,7 @@ local commands = {
     "/help",
     "/infjump",
     "/jumpboost",
+    "/loop (command)",
     "/noclip",
     "/reset",
     "/speed",
@@ -437,6 +439,47 @@ elseif cmd == "/teleport" then
             printToTerminal("Teleported to " .. targetPlayer.Name)
         else
             printToTerminal("Player not found: " .. arg)
+        end
+    end
+elseif cmd == "/loop" then
+    if arg == "off" then
+        -- Stop all active loops
+        for loopCmd, loopInfo in pairs(activeLoops) do
+            if loopInfo.Connection then
+                loopInfo.Connection:Disconnect()
+            end
+        end
+        activeLoops = {}
+        printToTerminal("All loops stopped")
+    else
+        -- Check if command exists
+        local loopCommand, loopArg = arg:match("^(%S+)%s*(%S*)$")
+        if not loopCommand then
+            printToTerminal("Invalid loop command")
+        else
+            -- Stop existing loop if running
+            if activeLoops[loopCommand] then
+                if activeLoops[loopCommand].Connection then
+                    activeLoops[loopCommand].Connection:Disconnect()
+                end
+                activeLoops[loopCommand] = nil
+            end
+
+            -- Start new loop
+            local RunService = game:GetService("RunService")
+            local conn
+            conn = RunService.Heartbeat:Connect(function(step)
+                if tick() - (activeLoops[loopCommand] and activeLoops[loopCommand].LastRun or 0) >= 1 then
+                    -- Simulate input as if the user typed the command
+                    inputBox.Text = loopCommand .. (loopArg ~= "" and (" " .. loopArg) or "")
+                    inputBox:CaptureFocus()
+                    inputBox:ReleaseFocus(true)
+                    activeLoops[loopCommand].LastRun = tick()
+                end
+            end)
+
+            activeLoops[loopCommand] = {Connection = conn, LastRun = 0}
+            printToTerminal("Loop started for command: " .. loopCommand)
         end
     end
 
