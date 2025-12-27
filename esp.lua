@@ -1,20 +1,24 @@
--- Simple Green Name ESP with Full Toggle
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local ESP = {}
 ESP.Active = false
-ESP.Billboards = {}      -- [Player] = BillboardGui
-ESP.Connections = {}     -- [Player] = {RenderStepped, CharacterAdded}
+ESP.Billboards = {}   -- [Player] = BillboardGui
+ESP.Connections = {}  -- [Player] = {RenderStepped, CharacterAdded}
 ESP.PlayerAddedConn = nil
 
--- Create ESP for a player
 local function createESP(player)
     if player == LocalPlayer then return end
     if ESP.Billboards[player] then return end
 
     local function onCharacterAdded(character)
+        -- Remove old ESP for safety
+        if ESP.Billboards[player] then
+            ESP.Billboards[player]:Destroy()
+            ESP.Billboards[player] = nil
+        end
+
         local hrp = character:WaitForChild("HumanoidRootPart", 5)
         if not hrp then return end
 
@@ -29,7 +33,7 @@ local function createESP(player)
         local text = Instance.new("TextLabel")
         text.Size = UDim2.new(1, 0, 1, 0)
         text.BackgroundTransparency = 1
-        text.TextColor3 = Color3.fromRGB(0, 255, 0) -- GREEN
+        text.TextColor3 = Color3.fromRGB(0, 255, 0)
         text.TextStrokeTransparency = 0
         text.TextScaled = true
         text.Font = Enum.Font.SourceSansBold
@@ -54,7 +58,11 @@ local function createESP(player)
         ESP.Connections[player].RenderStepped = rsConn
     end
 
-    -- Store CharacterAdded connection
+    -- Disconnect old CharacterAdded connection
+    if ESP.Connections[player] and ESP.Connections[player].CharacterAdded then
+        ESP.Connections[player].CharacterAdded:Disconnect()
+    end
+
     local charConn = player.CharacterAdded:Connect(onCharacterAdded)
     ESP.Connections[player] = ESP.Connections[player] or {}
     ESP.Connections[player].CharacterAdded = charConn
@@ -64,7 +72,6 @@ local function createESP(player)
     end
 end
 
--- Remove ESP for a player
 local function removeESP(player)
     if ESP.Billboards[player] then
         ESP.Billboards[player]:Destroy()
@@ -81,23 +88,18 @@ local function removeESP(player)
     end
 end
 
--- Toggle ESP
 function ESP.Toggle(state)
     ESP.Active = state
     if state then
-        -- Create ESP for all players
         for _, player in ipairs(Players:GetPlayers()) do
             createESP(player)
         end
-        -- Connect new players
         ESP.PlayerAddedConn = Players.PlayerAdded:Connect(createESP)
     else
-        -- Disconnect PlayerAdded
         if ESP.PlayerAddedConn then
             ESP.PlayerAddedConn:Disconnect()
             ESP.PlayerAddedConn = nil
         end
-        -- Remove ESP for all players and destroy everything
         for player, _ in pairs(ESP.Billboards) do
             removeESP(player)
         end
