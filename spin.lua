@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- Ensure only one global SpinModule exists
+-- Only create one global SpinModule
 if _G.SpinModule then
     return _G.SpinModule
 end
@@ -11,15 +11,28 @@ end
 local SpinModule = {}
 local spinning = false
 local spinConnection
+local hrp
+
+-- Ensure HRP is always valid (handles respawns)
+local function getHRP()
+    local char = player.Character
+    if char then
+        return char:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
 
 function SpinModule.Start(speed)
     speed = speed or 500
     if spinning then return end
     spinning = true
 
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local hrp = char.HumanoidRootPart
+    hrp = getHRP()
+    if not hrp then
+        player.CharacterAdded:Wait()
+        hrp = getHRP()
+        if not hrp then return end
+    end
 
     spinConnection = RunService.RenderStepped:Connect(function()
         if spinning and hrp then
@@ -35,6 +48,11 @@ function SpinModule.Stop()
         spinConnection = nil
     end
 end
+
+-- Reattach HRP if character respawns
+player.CharacterAdded:Connect(function(char)
+    hrp = char:WaitForChild("HumanoidRootPart")
+end)
 
 -- Store globally so /spin off works
 _G.SpinModule = SpinModule
