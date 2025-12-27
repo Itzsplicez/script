@@ -272,6 +272,7 @@ local commands = {
     "/teleport",
     "/tptool",
     "/tacos",
+    "/rejoin",
     "/swimfly",
     "/spectate",
 }
