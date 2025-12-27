@@ -705,6 +705,19 @@ elseif cmd == "/tptool" then
         printToTerminal("Failed to load Teleport Tool module")
     end
 
+elseif cmd == "/rejoin" then
+    local success, rejoinMod = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/rejoin.lua"))()
+    end)
+
+    if success and rejoinMod then
+        rejoinMod.Rejoin()
+        printToTerminal("Rejoining current server...")
+    else
+        printToTerminal("Failed to load Rejoin module")
+    end
+
+                
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
