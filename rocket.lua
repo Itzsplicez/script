@@ -7,32 +7,6 @@ local RocketModule = {}
 local lifting = false
 local liftConnection
 
--- Helper: show a message on all players' screens
-local function showMessageForAll(text, duration, size, position)
-    for _, plr in pairs(Players:GetPlayers()) do
-        local gui = plr:FindFirstChild("PlayerGui")
-        if gui then
-            local screen = Instance.new("ScreenGui")
-            screen.Name = "RocketMessage"
-            screen.Parent = gui
-
-            local label = Instance.new("TextLabel")
-            label.Size = size or UDim2.new(0, 400, 0, 100)
-            label.Position = position or UDim2.new(0.5, -200, 0.2, 0)
-            label.Text = text
-            label.Font = Enum.Font.SourceSansBold
-            label.TextSize = 72
-            label.TextColor3 = Color3.fromRGB(255, 0, 0)
-            label.BackgroundTransparency = 1
-            label.Parent = screen
-
-            delay(duration or 2, function()
-                if screen then screen:Destroy() end
-            end)
-        end
-    end
-end
-
 function RocketModule.Start(player)
     if lifting then return end
     lifting = true
@@ -40,46 +14,37 @@ function RocketModule.Start(player)
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
 
-    -- Countdown 3..2..1 visible to everyone
-    for i = 3, 1, -1 do
-        showMessageForAll(tostring(i), 1, UDim2.new(0, 200, 0, 50), UDim2.new(0.5, -100, 0.1, 0))
-        wait(1)
-    end
-
-    -- Lift player to a fixed height
-    local targetHeight = hrp.Position.Y + 200 -- 200 studs above current position
-    local speed = 100
+    -- Lift player straight up to a high Y position
+    local targetHeight = hrp.Position.Y + 300 -- go 300 studs up
+    local speed = 200 -- studs per second
 
     liftConnection = RunService.RenderStepped:Connect(function(dt)
         if hrp and hrp.Parent then
             local currentY = hrp.Position.Y
             if currentY < targetHeight then
-                hrp.CFrame = hrp.CFrame + Vector3.new(0, speed * dt, 0)
+                local newY = math.min(currentY + speed * dt, targetHeight)
+                hrp.CFrame = CFrame.new(hrp.Position.X, newY, hrp.Position.Z)
             end
         end
     end)
 
-    -- Wait until we reach target height
-    while hrp.Position.Y < targetHeight do
-        wait(0.05)
-    end
+    -- Wait until reaching target height
+    repeat wait(0.05) until hrp.Position.Y >= targetHeight
 
+    -- Stop the lift
     if liftConnection then
         liftConnection:Disconnect()
         liftConnection = nil
     end
 
-    -- Reset player (simulate explosion)
-    if char and char:FindFirstChild("Humanoid") then
-        char:BreakJoints()
-    end
-
-    -- BOOM message to all players' screens
-    showMessageForAll("BOOM!", 2)
-
-    -- Announce BOOM in chat so the whole server knows
+    -- Make the character say BOOM in chat
     if char and char:FindFirstChild("Head") then
         ChatService:Chat(char.Head, "BOOM!", Enum.ChatColor.Red)
+    end
+
+    -- Reset the player
+    if char and char:FindFirstChild("Humanoid") then
+        char:BreakJoints()
     end
 
     lifting = false
