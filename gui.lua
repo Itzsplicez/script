@@ -260,6 +260,7 @@ local commands = {
     "/doors",
     "/esp",
     "/fly",
+    "/freecam",
     "/float",
     "/fling",
     "/help",
