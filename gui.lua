@@ -272,6 +272,7 @@ local commands = {
     "/teleport",
     "/tacos",
     "/swimfly",
+    "/spectate",
 }
 
 -- Terminal command execution
