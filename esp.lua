@@ -1,4 +1,3 @@
-
 local ESP = {}
 ESP.Active = false
 ESP.Indicators = {} -- {Player = {Billboard, BoxFrame}}
