@@ -1,25 +1,20 @@
--- ESP Module
+-- Simple Name ESP
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = game:GetService("Players").LocalPlayer
+local LocalPlayer = Players.LocalPlayer
 
 local ESP = {}
 ESP.Active = false
-ESP.Indicators = {} -- [Player] = {BillboardGui, Box, Label, Connection}
+ESP.Indicators = {} -- [Player] = {Billboard, TextLabel}
 
 -- Create ESP for a player
 local function createESP(player)
     if player == LocalPlayer then return end
+    if ESP.Indicators[player] then return end -- Already exists
 
     local function onCharacterAdded(character)
         local hrp = character:WaitForChild("HumanoidRootPart", 5)
         if not hrp then return end
-
-        -- If ESP already exists, reassign Adornee (respawn)
-        if ESP.Indicators[player] then
-            ESP.Indicators[player].Billboard.Adornee = hrp
-            return
-        end
 
         -- Billboard
         local billboard = Instance.new("BillboardGui")
@@ -30,61 +25,51 @@ local function createESP(player)
         billboard.AlwaysOnTop = true
         billboard.Parent = hrp
 
-        -- Name label
+        -- Text label
         local text = Instance.new("TextLabel")
-        text.Size = UDim2.new(1, 0, 0.6, 0)
-        text.Position = UDim2.new(0, 0, 0, 0)
+        text.Size = UDim2.new(1, 0, 1, 0)
         text.BackgroundTransparency = 1
-        text.TextColor3 = Color3.fromRGB(0, 255, 0)
+        text.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
         text.TextStrokeTransparency = 0
         text.TextScaled = true
         text.Font = Enum.Font.SourceSansBold
         text.Text = player.Name
         text.Parent = billboard
 
-        -- Green box under name
-        local box = Instance.new("Frame")
-        box.Size = UDim2.new(0, 100, 0, 4)
-        box.Position = UDim2.new(0.5, -50, 0.6, 0)
-        box.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        box.BorderSizePixel = 0
-        box.Parent = billboard
+        ESP.Indicators[player] = {Billboard = billboard, Label = text}
 
-        -- Store indicator
-        ESP.Indicators[player] = {Billboard = billboard, Box = box, Label = text}
+        -- Remove if character is gone
+        RunService.RenderStepped:Connect(function()
+            if not character or not character.Parent then
+                if ESP.Indicators[player] then
+                    ESP.Indicators[player].Billboard:Destroy()
+                    ESP.Indicators[player] = nil
+                end
+            end
+        end)
     end
 
-    -- Connect to character
     if player.Character then
         onCharacterAdded(player.Character)
     end
     player.CharacterAdded:Connect(onCharacterAdded)
 end
 
--- Remove ESP for a player
-local function removeESP(player)
-    if ESP.Indicators[player] then
-        ESP.Indicators[player].Billboard:Destroy()
-        ESP.Indicators[player] = nil
-    end
-end
-
--- Toggle ESP
+-- Toggle ESP on/off
 function ESP.Toggle(state)
     ESP.Active = state
     if state then
-        for _, player in pairs(Players:GetPlayers()) do
+        for _, player in ipairs(Players:GetPlayers()) do
             createESP(player)
         end
-        ESP.PlayerAddedConnection = Players.PlayerAdded:Connect(function(player)
-            if ESP.Active then
-                createESP(player)
-            end
-        end)
+        ESP.PlayerAddedConnection = Players.PlayerAdded:Connect(createESP)
     else
-        for player, _ in pairs(ESP.Indicators) do
-            removeESP(player)
+        for player, data in pairs(ESP.Indicators) do
+            if data.Billboard then
+                data.Billboard:Destroy()
+            end
         end
+        ESP.Indicators = {}
         if ESP.PlayerAddedConnection then
             ESP.PlayerAddedConnection:Disconnect()
             ESP.PlayerAddedConnection = nil
