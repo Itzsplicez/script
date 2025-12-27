@@ -225,6 +225,7 @@ local commands = {
     "/noclip",
     "/reset",
     "/speed",
+    "/fling",
 }
 
 -- Terminal command execution
@@ -312,6 +313,22 @@ inputBox.FocusLost:Connect(function(enterPressed)
                 printToTerminal("  "..v)
             end
             printToTerminal("To turn off a command, type /command off (if supported)")
+
+elseif cmd == "/fling" then
+    if arg == "off" then
+        if _G.ToggleFling then
+            _G.ToggleFling(false)
+            printToTerminal("Fling disabled")
+        else
+            printToTerminal("Fling is not running")
+        end
+    else
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fling.lua"))()
+        end)
+        if _G.ToggleFling then _G.ToggleFling(true) end
+        printToTerminal("Fling enabled")
+    end
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
