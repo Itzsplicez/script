@@ -3,6 +3,43 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
+-- Player finder with autocomplete / partial match
+local function getPlayerFromArg(arg)
+    if not arg or arg == "" then
+        return nil
+    end
+
+    arg = arg:lower()
+    local players = Players:GetPlayers()
+
+    if arg == "me" then
+        return player
+    elseif arg == "others" then
+        for _, plr in ipairs(players) do
+            if plr ~= player then
+                return plr
+            end
+        end
+    elseif arg == "all" or arg == "everyone" then
+        return players[1]
+    end
+
+    -- Exact name match (case-insensitive)
+    for _, plr in ipairs(players) do
+        if plr.Name:lower() == arg then
+            return plr
+        end
+    end
+
+    -- Partial / autocomplete match
+    for _, plr in ipairs(players) do
+        if plr.Name:lower():sub(1, #arg) == arg then
+            return plr
+        end
+    end
+
+    return nil
+end
 
 -- Load jump module
 local success, jumpModule = pcall(function()
@@ -323,13 +360,15 @@ elseif cmd == "/fling" then
             printToTerminal("Fling is not running")
         end
     else
-        local targetPlayer = Players:FindFirstChild(arg)
+        local targetPlayer = getPlayerFromArg(arg)
+
         if targetPlayer then
             pcall(function()
                 loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fling.lua"))()
             end)
+
             if _G.ToggleFling then
-                _G.ToggleFling(true, targetPlayer)  -- pass target player
+                _G.ToggleFling(true, targetPlayer)
                 printToTerminal("Flinging "..targetPlayer.Name)
             else
                 printToTerminal("Fling module failed to load")
@@ -338,6 +377,7 @@ elseif cmd == "/fling" then
             printToTerminal("Player not found: "..arg)
         end
     end
+
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
