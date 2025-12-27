@@ -486,7 +486,6 @@ elseif cmd == "/teleport" then
             printToTerminal("Player not found: " .. arg)
         end
     end
-                
 elseif cmd == "/loop" then
     local loopText = arg  -- everything after "/loop "
     if loopText:lower() == "off" then
@@ -509,7 +508,11 @@ elseif cmd == "/loop" then
         local conn
         conn = RunService.Heartbeat:Connect(function()
             if tick() - (activeLoops[loopText] and activeLoops[loopText].LastRun or 0) >= 1 then
-                executeCommand(loopText)   -- <--- run the full command
+                -- Split loopText into cmd and arg properly
+                local lcmd, larg = loopText:match("^(%S+)%s*(.-)$")
+                if lcmd then
+                    executeCommand(lcmd.." "..larg)
+                end
                 activeLoops[loopText].LastRun = tick()
             end
         end)
@@ -517,6 +520,7 @@ elseif cmd == "/loop" then
         activeLoops[loopText] = {Connection = conn, LastRun = 0}
         printToTerminal("Loop started for: "..loopText)
     end
+
 
 
 
