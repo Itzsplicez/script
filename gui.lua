@@ -602,6 +602,24 @@ elseif cmd == "/spin" then
         end
     end
 
+elseif cmd == "/orbit" then
+    local orbitModule = _G.OrbitModule or loadstring(
+        game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/orbit.lua")
+    )()
+
+    if arg == "off" then
+        orbitModule.Stop()
+        printToTerminal("Orbit disabled")
+    else
+        local target = getPlayerFromArg(arg)
+        if target then
+            orbitModule.Start(target, 3, 6)
+            printToTerminal("Orbiting "..target.Name)
+        else
+            printToTerminal("Player not found: "..arg)
+        end
+    end
+
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
