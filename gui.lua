@@ -512,7 +512,7 @@ elseif cmd == "/loop" then
             local conn
             conn = RunService.Heartbeat:Connect(function()
                 if tick() - (activeLoops[loopCommand] and activeLoops[loopCommand].LastRun or 0) >= 1 then
-                    executeCommand(loopCommand .. (loopArg ~= "" and (" " .. loopArg) or ""))
+                    executeCommand("/" .. loopCommand .. (loopArg ~= "" and (" " .. loopArg) or ""))
                     activeLoops[loopCommand].LastRun = tick()
                 end
             end)
