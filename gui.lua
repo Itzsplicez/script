@@ -694,14 +694,19 @@ elseif cmd == "/spectate" then
     end
 
 elseif cmd == "/freecam" then
-    local success, freecam = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/freecam.lua"))()
-    end)
-
-    if not success or not freecam then
-        printToTerminal("Failed to load Freecam module")
-        return
+    if not _G.FreecamModule then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/freecam.lua"))()
+        end)
+        if success then
+            _G.FreecamModule = mod
+        else
+            printToTerminal("Failed to load Freecam module")
+            return
+        end
     end
+
+    local freecam = _G.FreecamModule
 
     if arg == "off" then
         freecam.Stop()
