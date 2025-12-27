@@ -488,34 +488,36 @@ elseif cmd == "/teleport" then
     end
                 
 elseif cmd == "/loop" then
-    if arg:lower() == "off" then
-        for text, loopInfo in pairs(activeLoops) do
-            if loopInfo.Connection then
-                loopInfo.Connection:Disconnect()
-            end
+    local loopText = arg  -- everything after "/loop "
+    if loopText:lower() == "off" then
+        -- stop all loops
+        for _, loopInfo in pairs(activeLoops) do
+            if loopInfo.Connection then loopInfo.Connection:Disconnect() end
         end
         activeLoops = {}
         printToTerminal("All loops stopped")
     else
-        -- Stop existing loop for same text if it exists
-        if activeLoops[arg] then
-            if activeLoops[arg].Connection then
-                activeLoops[arg].Connection:Disconnect()
+        -- stop existing loop for the same text
+        if activeLoops[loopText] then
+            if activeLoops[loopText].Connection then
+                activeLoops[loopText].Connection:Disconnect()
             end
-            activeLoops[arg] = nil
+            activeLoops[loopText] = nil
         end
 
+        -- start looping
         local conn
         conn = RunService.Heartbeat:Connect(function()
-            if tick() - (activeLoops[arg] and activeLoops[arg].LastRun or 0) >= 1 then
-                printToTerminal(arg)
-                activeLoops[arg].LastRun = tick()
+            if tick() - (activeLoops[loopText] and activeLoops[loopText].LastRun or 0) >= 1 then
+                executeCommand(loopText)   -- <--- run the full command
+                activeLoops[loopText].LastRun = tick()
             end
         end)
 
-        activeLoops[arg] = {Connection = conn, LastRun = 0}
-        printToTerminal("Loop started for text: " .. arg)
+        activeLoops[loopText] = {Connection = conn, LastRun = 0}
+        printToTerminal("Loop started for: "..loopText)
     end
+
 
 
                 
