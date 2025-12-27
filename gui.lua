@@ -550,7 +550,6 @@ elseif cmd == "/tacos" then
     end
                 
 elseif cmd == "/rocket" then
-    -- Load rocket module
     local success, RocketModule = pcall(function()
         return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/rocket.lua"))()
     end)
@@ -561,7 +560,6 @@ elseif cmd == "/rocket" then
         RocketModule.Start(player)
         printToTerminal("Rocket launched!")
     end
-
                 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
