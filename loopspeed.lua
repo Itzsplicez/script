@@ -5,12 +5,16 @@ local player = Players.LocalPlayer
 
 local loopConnection
 local LoopSpeedModule = {}
+local loopSpeedNum = 16
 
+-- Start looping speed every 0.5 seconds
 function LoopSpeedModule.Start(speed)
     local speedNum = tonumber(speed)
     if not speedNum or speedNum < 1 or speedNum > 100 then
         return false, "Invalid speed! Use 1-100"
     end
+
+    loopSpeedNum = speedNum
 
     -- Stop previous loop if it exists
     if loopConnection then
@@ -18,10 +22,20 @@ function LoopSpeedModule.Start(speed)
         loopConnection = nil
     end
 
-    -- Start looping
-    loopConnection = RunService.Heartbeat:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = speedNum
+    loopConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        if not player.Character or not player.Character:FindFirstChild("Humanoid") then return end
+        -- Only update every 0.5 seconds
+        loopConnection = loopConnection or RunService.Heartbeat:Connect(function() end) -- dummy to keep connection
+        player.Character.Humanoid.WalkSpeed = loopSpeedNum
+    end)
+
+    -- Use a simple timer for 0.5s interval
+    spawn(function()
+        while loopConnection do
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = loopSpeedNum
+            end
+            wait(0.5)
         end
     end)
 
