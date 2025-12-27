@@ -5,8 +5,8 @@ local LocalPlayer = Players.LocalPlayer
 
 local ESP = {}
 ESP.Active = false
-ESP.Connections = {} -- To store RenderStepped connections
-ESP.Billboards = {} -- To store player billboards
+ESP.Billboards = {}      -- [Player] = BillboardGui
+ESP.Connections = {}     -- [Player] = {RenderStepped, CharacterAdded}
 
 -- Create ESP for a player
 local function createESP(player)
@@ -34,35 +34,34 @@ local function createESP(player)
         text.Font = Enum.Font.SourceSansBold
         text.Parent = billboard
 
-        -- Update distance every frame
-        local conn
-        conn = RunService.RenderStepped:Connect(function()
+        -- Update every frame
+        local rsConn
+        rsConn = RunService.RenderStepped:Connect(function()
             if not ESP.Active then return end
             if not character or not character.Parent then
                 billboard:Destroy()
-                if conn then conn:Disconnect() end
+                if rsConn then rsConn:Disconnect() end
                 ESP.Billboards[player] = nil
                 ESP.Connections[player] = nil
                 return
             end
 
-            local distance = 0
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                distance = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
-            end
-
-            text.Text = player.Name .. "\n" .. math.floor(distance) .. " studs"
+            text.Text = player.Name
         end)
 
-        ESP.Connections[player] = conn
         ESP.Billboards[player] = billboard
+        ESP.Connections[player] = ESP.Connections[player] or {}
+        ESP.Connections[player].RenderStepped = rsConn
     end
 
-    -- Always apply ESP even after death/respawn
+    -- Connect CharacterAdded and store it so we can disconnect later
+    local charConn = player.CharacterAdded:Connect(onCharacterAdded)
+    ESP.Connections[player] = ESP.Connections[player] or {}
+    ESP.Connections[player].CharacterAdded = charConn
+
     if player.Character then
         onCharacterAdded(player.Character)
     end
-    player.CharacterAdded:Connect(onCharacterAdded)
 end
 
 -- Remove ESP for a player
@@ -72,7 +71,12 @@ local function removeESP(player)
         ESP.Billboards[player] = nil
     end
     if ESP.Connections[player] then
-        ESP.Connections[player]:Disconnect()
+        if ESP.Connections[player].RenderStepped then
+            ESP.Connections[player].RenderStepped:Disconnect()
+        end
+        if ESP.Connections[player].CharacterAdded then
+            ESP.Connections[player].CharacterAdded:Disconnect()
+        end
         ESP.Connections[player] = nil
     end
 end
@@ -84,8 +88,14 @@ function ESP.Toggle(state)
         for _, player in ipairs(Players:GetPlayers()) do
             createESP(player)
         end
-        Players.PlayerAdded:Connect(createESP)
+        -- Connect new players
+        ESP.PlayerAddedConn = Players.PlayerAdded:Connect(createESP)
     else
+        -- Disconnect PlayerAdded connection
+        if ESP.PlayerAddedConn then
+            ESP.PlayerAddedConn:Disconnect()
+            ESP.PlayerAddedConn = nil
+        end
         -- Remove ESP for everyone
         for player, _ in pairs(ESP.Billboards) do
             removeESP(player)
