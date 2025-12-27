@@ -591,7 +591,12 @@ elseif cmd == "/spin" then
             printToTerminal("Spin disabled")
         else
             local speed = tonumber(arg) or 5
-            if speed < 1 or speed > 50 then speed = 5 end
+            if speed > 500 then
+                printToTerminal("Your chosen speed is above max 500, setting to 500")
+                speed = 500
+            elseif speed < 1 then
+                speed = 1
+            end
             spinModule.Start(speed)
             printToTerminal("Spinning enabled at speed "..speed)
         end
