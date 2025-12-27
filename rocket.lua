@@ -13,6 +13,7 @@ function RocketModule.Start(player)
 
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChild("Humanoid")
 
     -- Countdown 3..2..1 said in chat
     for i = 3,1,-1 do
@@ -22,37 +23,28 @@ function RocketModule.Start(player)
         wait(1)
     end
 
-    -- Lift player straight up
-    local targetHeight = hrp.Position.Y + 300 -- lift 300 studs
-    local speed = 200 -- studs per second
+    -- BLASTOFF message
+    if char:FindFirstChild("Head") then
+        ChatService:Chat(char.Head, "BLASTOFF!", Enum.ChatColor.Red)
+    end
 
+    -- Lift player upwards continuously until death/reset
+    local speed = 150 -- studs per second
     liftConnection = RunService.RenderStepped:Connect(function(dt)
         if hrp and hrp.Parent then
-            local currentY = hrp.Position.Y
-            if currentY < targetHeight then
-                local newY = math.min(currentY + speed * dt, targetHeight)
-                hrp.CFrame = CFrame.new(hrp.Position.X, newY, hrp.Position.Z)
-            end
+            hrp.CFrame = hrp.CFrame + Vector3.new(0, speed * dt, 0)
         end
     end)
 
-    -- Wait until reaching target height
-    repeat wait(0.05) until hrp.Position.Y >= targetHeight
+    -- Wait until humanoid dies / breaks
+    if humanoid then
+        humanoid.Died:Wait()
+    end
 
     -- Stop the lift
     if liftConnection then
         liftConnection:Disconnect()
         liftConnection = nil
-    end
-
-    -- Say BOOM in chat
-    if char:FindFirstChild("Head") then
-        ChatService:Chat(char.Head, "BOOM!", Enum.ChatColor.Red)
-    end
-
-    -- Reset the player (simulate explosion)
-    if char:FindFirstChild("Humanoid") then
-        char:BreakJoints()
     end
 
     lifting = false
