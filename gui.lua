@@ -315,7 +315,6 @@ inputBox.FocusLost:Connect(function(enterPressed)
             printToTerminal("To turn off a command, type /command off (if supported)")
 
 elseif cmd == "/fling" then
-    local targetPlayer = Players:FindFirstChild(arg)
     if arg == "off" then
         if _G.ToggleFling then
             _G.ToggleFling(false)
@@ -323,18 +322,22 @@ elseif cmd == "/fling" then
         else
             printToTerminal("Fling is not running")
         end
-    elseif targetPlayer then
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fling.lua"))()
-        end)
-        if _G.ToggleFling then
-            _G.ToggleFling(true, targetPlayer)
-        end
-        printToTerminal("Flinging "..targetPlayer.Name)
     else
-        printToTerminal("Player not found: "..arg)
+        local targetPlayer = Players:FindFirstChild(arg)
+        if targetPlayer then
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/fling.lua"))()
+            end)
+            if _G.ToggleFling then
+                _G.ToggleFling(true, targetPlayer)  -- pass target player
+                printToTerminal("Flinging "..targetPlayer.Name)
+            else
+                printToTerminal("Fling module failed to load")
+            end
+        else
+            printToTerminal("Player not found: "..arg)
+        end
     end
-
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
