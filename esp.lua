@@ -1,11 +1,11 @@
 -- ESP Module
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local ESP = {}
 ESP.Active = false
-ESP.Indicators = {} -- [Player] = {BillboardGui, Box, TextLabel, Connection}
+ESP.Indicators = {} -- [Player] = {BillboardGui, Box, Label, Connection}
 
 -- Create ESP for a player
 local function createESP(player)
@@ -15,7 +15,7 @@ local function createESP(player)
         local hrp = character:WaitForChild("HumanoidRootPart", 5)
         if not hrp then return end
 
-        -- If already exists (player respawned), reassign Adornee
+        -- If ESP already exists, reassign Adornee (respawn)
         if ESP.Indicators[player] then
             ESP.Indicators[player].Billboard.Adornee = hrp
             return
@@ -30,7 +30,7 @@ local function createESP(player)
         billboard.AlwaysOnTop = true
         billboard.Parent = hrp
 
-        -- Text Label
+        -- Name label
         local text = Instance.new("TextLabel")
         text.Size = UDim2.new(1, 0, 0.6, 0)
         text.Position = UDim2.new(0, 0, 0, 0)
@@ -52,26 +52,6 @@ local function createESP(player)
 
         -- Store indicator
         ESP.Indicators[player] = {Billboard = billboard, Box = box, Label = text}
-
-        -- Update distance every frame
-        ESP.Indicators[player].Connection = RunService.RenderStepped:Connect(function()
-            if not character or not character.Parent then
-                -- Character is gone, clean up
-                billboard:Destroy()
-                if ESP.Indicators[player].Connection then
-                    ESP.Indicators[player].Connection:Disconnect()
-                end
-                ESP.Indicators[player] = nil
-                return
-            end
-
-            local distance = 0
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                distance = (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude
-            end
-
-            text.Text = player.Name .. "\n" .. math.floor(distance) .. " studs"
-        end)
     end
 
     -- Connect to character
@@ -81,11 +61,9 @@ local function createESP(player)
     player.CharacterAdded:Connect(onCharacterAdded)
 end
 
+-- Remove ESP for a player
 local function removeESP(player)
     if ESP.Indicators[player] then
-        if ESP.Indicators[player].Connection then
-            ESP.Indicators[player].Connection:Disconnect()
-        end
         ESP.Indicators[player].Billboard:Destroy()
         ESP.Indicators[player] = nil
     end
@@ -98,7 +76,7 @@ function ESP.Toggle(state)
         for _, player in pairs(Players:GetPlayers()) do
             createESP(player)
         end
-        Players.PlayerAdded:Connect(function(player)
+        ESP.PlayerAddedConnection = Players.PlayerAdded:Connect(function(player)
             if ESP.Active then
                 createESP(player)
             end
@@ -106,6 +84,10 @@ function ESP.Toggle(state)
     else
         for player, _ in pairs(ESP.Indicators) do
             removeESP(player)
+        end
+        if ESP.PlayerAddedConnection then
+            ESP.PlayerAddedConnection:Disconnect()
+            ESP.PlayerAddedConnection = nil
         end
     end
 end
