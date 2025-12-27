@@ -1,36 +1,47 @@
+-- taco.lua
 local Players = game:GetService("Players")
-local soundId = "rbxassetid://142376088" -- Raining Tacos
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
 
-local function playTacos()
-    for _, plr in ipairs(Players:GetPlayers()) do
-        local char = plr.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            if not char.HumanoidRootPart:FindFirstChild("RainingTacos") then
-                local tacoSound = Instance.new("Sound")
-                tacoSound.Name = "RainingTacos"
-                tacoSound.SoundId = soundId
-                tacoSound.Volume = 1
-                tacoSound.Looped = true
-                tacoSound.Parent = char.HumanoidRootPart
-                tacoSound:Play()
-            end
-        end
+local TacoModule = {}
+local tacoSound
+local heartbeatConnection
+
+-- Stops the taco sound
+function TacoModule.Stop()
+    if tacoSound then
+        tacoSound:Stop()
+        tacoSound:Destroy()
+        tacoSound = nil
+    end
+    if heartbeatConnection then
+        heartbeatConnection:Disconnect()
+        heartbeatConnection = nil
     end
 end
 
-local function stopTacos()
-    for _, plr in ipairs(Players:GetPlayers()) do
-        local char = plr.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local tacoSound = char.HumanoidRootPart:FindFirstChild("RainingTacos")
-            if tacoSound then
-                tacoSound:Stop()
-                tacoSound:Destroy()
-            end
+-- Plays the taco sound
+function TacoModule.Play()
+    TacoModule.Stop() -- stop existing if any
+
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    tacoSound = Instance.new("Sound")
+    tacoSound.SoundId = "rbxassetid://142376088" -- Raining Tacos
+    tacoSound.Volume = 1
+    tacoSound.Looped = true
+    tacoSound.PlaybackSpeed = 1
+    tacoSound.Parent = hrp -- attach to player so it follows
+
+    -- Update sound position every frame (optional, but ensures it follows)
+    heartbeatConnection = RunService.Heartbeat:Connect(function()
+        if tacoSound and hrp then
+            tacoSound.Position = hrp.Position
         end
-    end
+    end)
+
+    tacoSound:Play()
 end
 
--- Example usage
--- playTacos()  -- /tacos
--- stopTacos()  -- /tacos off
+return TacoModule
