@@ -220,7 +220,7 @@ local commands = {
     "/clear",
     "/fly",
     "/help",
-    "/jump",
+    "/infjump",
     "/noclip",
     "/reset",
     "/speed",
@@ -239,7 +239,7 @@ inputBox.FocusLost:Connect(function(enterPressed)
             outputFrame.CanvasPosition = Vector2.new(0,0)
             printToTerminal("Terminal cleared")
 
-        elseif cmd == "/jump" then
+        elseif cmd == "/Infjump" then
             if arg == "off" then
                 if jumpModule then jumpModule.Disable() end
                 printToTerminal("InfJump disabled")
