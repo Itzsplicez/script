@@ -3,16 +3,17 @@ local RunService = game:GetService("RunService")
 
 local ESP = {}
 ESP.Active = false
-ESP.Indicators = {} -- [Player] = BillboardGui
+ESP.Indicators = {} -- [Player] = {Billboard, Label}
 
--- Create ESP for a player
-local function createESP(plr)
-    local char = plr.Character
-    if not char then return end
+-- Helper: create ESP for a player's character
+local function createESPForChar(plr, char)
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    if ESP.Indicators[plr] then return end -- already exists
+    -- Remove old billboard if exists
+    if ESP.Indicators[plr] and ESP.Indicators[plr].Billboard then
+        ESP.Indicators[plr].Billboard:Destroy()
+    end
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESPLabel"
@@ -35,6 +36,7 @@ local function createESP(plr)
     ESP.Indicators[plr] = {Billboard = billboard, Label = nameLabel}
 end
 
+-- Remove ESP
 local function removeESP(plr)
     if ESP.Indicators[plr] then
         if ESP.Indicators[plr].Billboard then
@@ -44,32 +46,38 @@ local function removeESP(plr)
     end
 end
 
--- Apply ESP to all players
+-- Apply ESP to all current players
 local function applyESPToAll()
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= Players.LocalPlayer then
-            createESP(plr)
+            local char = plr.Character
+            if char then
+                createESPForChar(plr, char)
+            end
+
+            -- Recreate ESP if character respawns
             plr.CharacterAdded:Connect(function(char)
                 if ESP.Active then
-                    createESP(plr)
+                    createESPForChar(plr, char)
                 end
             end)
         end
     end
 end
 
+-- Toggle ESP
 function ESP.Toggle(state)
     ESP.Active = state
-    if not state then
+    if state then
+        applyESPToAll()
+    else
         for _, plr in pairs(Players:GetPlayers()) do
             removeESP(plr)
         end
-    else
-        applyESPToAll()
     end
 end
 
--- Update distance every frame
+-- Update distances every frame
 RunService.RenderStepped:Connect(function()
     if not ESP.Active then return end
     local localChar = Players.LocalPlayer.Character
@@ -84,14 +92,20 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Ensure ESP for new players joining mid-game
 Players.PlayerAdded:Connect(function(plr)
     if ESP.Active then
         plr.CharacterAdded:Connect(function(char)
-            createESP(plr)
+            createESPForChar(plr, char)
         end)
+        -- If they already have a character
+        if plr.Character then
+            createESPForChar(plr, plr.Character)
+        end
     end
 end)
 
+-- Clean up when player leaves
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
