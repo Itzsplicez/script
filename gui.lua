@@ -260,7 +260,6 @@ local commands = {
     "/doors",
     "/esp",
     "/fly",
-    "/freecam",
     "/float",
     "/fling",
     "/help",
@@ -271,6 +270,7 @@ local commands = {
     "/spin",
     "/speed",
     "/teleport",
+    "/tptool",
     "/tacos",
     "/swimfly",
     "/spectate",
@@ -693,28 +693,16 @@ elseif cmd == "/spectate" then
         end
     end
 
-elseif cmd == "/freecam" then
-    if not _G.FreecamModule then
-        local success, mod = pcall(function()
-            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/freecam.lua"))()
-        end)
-        if success then
-            _G.FreecamModule = mod
-        else
-            printToTerminal("Failed to load Freecam module")
-            return
-        end
-    end
+elseif cmd == "/tptool" then
+    local success, tptool = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/tptool.lua"))()
+    end)
 
-    local freecam = _G.FreecamModule
-
-    if arg == "off" then
-        freecam.Stop()
-        printToTerminal("Freecam disabled")
+    if success and tptool then
+        tptool.Give()
+        printToTerminal("Teleport Tool added to your inventory")
     else
-        local num = tonumber(arg)
-        freecam.Start(num or 1)
-        printToTerminal("Freecam enabled at speed " .. (num or 1))
+        printToTerminal("Failed to load Teleport Tool module")
     end
 
         else
