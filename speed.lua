@@ -1,40 +1,8 @@
--- Loopspeed module
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local loopConnection
-local LoopSpeedModule = {}
-
-function LoopSpeedModule.Start(speed)
-    local speedNum = tonumber(speed)
-    if not speedNum or speedNum < 1 or speedNum > 500 then
-        return false, "Invalid speed! Use 1-500"
-    end
-
-    -- Stop previous loop if it exists
-    if loopConnection then
-        loopConnection:Disconnect()
-        loopConnection = nil
-    end
-
-    -- Start looping
-    loopConnection = RunService.Heartbeat:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = speedNum
-        end
-    end)
-
-    print("Loopspeed started at "..speedNum)
-    return true
+local speedNum = tonumber(arg)
+if speedNum and speedNum >= 1 and speedNum <= 100 then
+if player.Character and player.Character:FindFirstChild("Humanoid") then
+            local newSpeed = 20 + ((speedNum - 1) * (100 - 20)/99)
+            local newSpeed = speedNum -- directly use the number for WalkSpeed
+player.Character.Humanoid.WalkSpeed = newSpeed
 end
-
-function LoopSpeedModule.Stop()
-    if loopConnection then
-        loopConnection:Disconnect()
-        loopConnection = nil
-        print("Loopspeed stopped")
-    end
-end
-
-return LoopSpeedModule
+printToTerminal("Speed set to "..speedNum)
