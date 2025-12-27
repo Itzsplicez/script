@@ -488,8 +488,8 @@ elseif cmd == "/teleport" then
     end
                 
 elseif cmd == "/loop" then
-    if arg == "off" then
-        for loopCmd, loopInfo in pairs(activeLoops) do
+    if arg:lower() == "off" then
+        for text, loopInfo in pairs(activeLoops) do
             if loopInfo.Connection then
                 loopInfo.Connection:Disconnect()
             end
@@ -497,29 +497,24 @@ elseif cmd == "/loop" then
         activeLoops = {}
         printToTerminal("All loops stopped")
     else
-        local loopCommand, loopArg = arg:match("^(%S+)%s*(.*)$") -- allow space in arguments
-        if not loopCommand then
-            printToTerminal("Invalid loop command")
-        else
-            -- Stop existing loop if running
-            if activeLoops[loopCommand] then
-                if activeLoops[loopCommand].Connection then
-                    activeLoops[loopCommand].Connection:Disconnect()
-                end
-                activeLoops[loopCommand] = nil
+        -- Stop existing loop for same text if it exists
+        if activeLoops[arg] then
+            if activeLoops[arg].Connection then
+                activeLoops[arg].Connection:Disconnect()
             end
-
-            local conn
-            conn = RunService.Heartbeat:Connect(function()
-                if tick() - (activeLoops[loopCommand] and activeLoops[loopCommand].LastRun or 0) >= 1 then
-                    executeCommand("/" .. loopCommand .. (loopArg ~= "" and (" " .. loopArg) or ""))
-                    activeLoops[loopCommand].LastRun = tick()
-                end
-            end)
-
-            activeLoops[loopCommand] = {Connection = conn, LastRun = 0}
-            printToTerminal("Loop started for command: " .. loopCommand)
+            activeLoops[arg] = nil
         end
+
+        local conn
+        conn = RunService.Heartbeat:Connect(function()
+            if tick() - (activeLoops[arg] and activeLoops[arg].LastRun or 0) >= 1 then
+                printToTerminal(arg)
+                activeLoops[arg].LastRun = tick()
+            end
+        end)
+
+        activeLoops[arg] = {Connection = conn, LastRun = 0}
+        printToTerminal("Loop started for text: " .. arg)
     end
 
 
