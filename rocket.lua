@@ -1,13 +1,25 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RocketModule = {}
 local lifting = false
 local liftConnection
 
 local player = Players.LocalPlayer
-local chatEvent = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest")
+
+-- Get SayMessageRequest safely
+local chatEvent
+pcall(function()
+    chatEvent = game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest")
+end)
+
+local function sayMessage(msg)
+    if chatEvent then
+        chatEvent:FireServer(msg, "All")
+    else
+        warn("SayMessageRequest not found, cannot send chat messages.")
+    end
+end
 
 function RocketModule.Start()
     if lifting then return end
@@ -18,11 +30,11 @@ function RocketModule.Start()
     local humanoid = char:FindFirstChild("Humanoid")
 
     -- Countdown
-    for i = 3,2,1 do
-        chatEvent:FireServer(tostring(i), "All")
+    for i = 3, 1, -1 do
+        sayMessage(tostring(i))
         wait(1)
     end
-    chatEvent:FireServer("BLASTOFF!", "All")
+    sayMessage("BLASTOFF!")
 
     -- Lift player for 4 seconds
     local duration = 4
@@ -49,8 +61,8 @@ function RocketModule.Start()
         humanoid.Health = 0
     end
 
-    -- Say BOOM! in normal chat
-    chatEvent:FireServer("BOOM!", "All")
+    -- Say BOOM! in chat
+    sayMessage("BOOM!")
 
     lifting = false
 end
