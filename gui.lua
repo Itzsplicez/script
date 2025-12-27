@@ -258,11 +258,11 @@ makeDraggable(mini)
 local commands = {
     "/clear",
     "/fly",
+    "/float",
     "/fling",
     "/help",
     "/infjump",
     "/jumpboost",
-    "/loopspeed",
     "/noclip",
     "/reset",
     "/speed",
@@ -442,30 +442,24 @@ elseif cmd == "/teleport" then
         end
     end
 
-elseif cmd == "/loopspeed" then
-    local success, loopSpeedModule = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/loopspeed.lua"))()
+elseif cmd == "/float" then
+    -- Load the float module when command is run
+    local success, floatModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/float.lua"))()
     end)
 
-    if not success or not loopSpeedModule then
-        printToTerminal("Failed to load loopspeed module")
+    if not success or not floatModule then
+        printToTerminal("Failed to load float module")
     else
         if arg == "off" then
-            loopSpeedModule.Stop()
-            printToTerminal("Loopspeed disabled, speed reset to 16")
+            floatModule.Stop()
+            printToTerminal("Float disabled")
         else
-            local speedNum = tonumber(arg)
-            if speedNum and speedNum >= 1 and speedNum <= 500 then
-                loopSpeedModule.Start(speedNum)
-                printToTerminal("Loopspeed enabled at "..speedNum)
-            else
-                printToTerminal("Invalid loopspeed! Use /loopspeed 1-500 or /loopspeed off")
-            end
+            floatModule.Start()
+            printToTerminal("Float enabled")
         end
     end
-
-
-                
+               
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
