@@ -9,7 +9,7 @@ ESP.Billboards = {}
 ESP.Connections = {} -- Humanoid.Died connections
 ESP.CharacterConnections = {} -- CharacterAdded connections
 
--- Helper: Create BillboardGui for name only
+-- Create BillboardGui for name
 local function createLabel(plr, char)
     local hrp = char:WaitForChild("HumanoidRootPart")
 
@@ -34,7 +34,7 @@ local function createLabel(plr, char)
     return billboard
 end
 
--- Helper: Create SelectionBoxes for all body parts
+-- Create SelectionBoxes for all BaseParts
 local function createBoxes(char)
     local boxes = {}
     for _, part in pairs(char:GetDescendants()) do
@@ -51,7 +51,7 @@ local function createBoxes(char)
     return boxes
 end
 
--- Remove ESP for a single player
+-- Remove ESP for a player
 local function removeESP(plr)
     if ESP.Connections[plr] then
         ESP.Connections[plr]:Disconnect()
@@ -71,29 +71,43 @@ local function removeESP(plr)
     end
 end
 
--- Set up ESP for a single character
+-- Apply ESP to a character
 local function setupESPForCharacter(plr, char)
-    removeESP(plr) -- Remove old ESP if any
+    removeESP(plr)
+
+    -- Wait for all parts to load
+    char:WaitForChild("HumanoidRootPart")
     ESP.Boxes[plr] = createBoxes(char)
     ESP.Billboards[plr] = createLabel(plr, char)
 
-    -- Remove ESP when humanoid dies
+    -- Rebuild boxes if new parts are added (like accessories)
+    ESP.Connections[plr] = char.DescendantAdded:Connect(function(desc)
+        if desc:IsA("BasePart") then
+            local box = Instance.new("SelectionBox")
+            box.Adornee = desc
+            box.LineThickness = 0.05
+            box.SurfaceTransparency = 0.8
+            box.Color3 = Color3.fromRGB(0, 255, 0)
+            box.Parent = desc
+            table.insert(ESP.Boxes[plr], box)
+        end
+    end)
+
+    -- Remove ESP on death
     local humanoid = char:FindFirstChild("Humanoid")
     if humanoid then
-        ESP.Connections[plr] = humanoid.Died:Connect(function()
+        ESP.Connections[plr.."died"] = humanoid.Died:Connect(function()
             removeESP(plr)
         end)
     end
 end
 
--- Set up ESP for a player (handles current character and future respawns)
+-- Apply ESP for a player (handles respawns)
 local function setupESPForPlayer(plr)
-    -- Current character
     if plr.Character then
         setupESPForCharacter(plr, plr.Character)
     end
 
-    -- Listen for respawns
     if not ESP.CharacterConnections[plr] then
         ESP.CharacterConnections[plr] = plr.CharacterAdded:Connect(function(char)
             if ESP.Active then
@@ -103,7 +117,7 @@ local function setupESPForPlayer(plr)
     end
 end
 
--- Toggle ESP on/off
+-- Toggle ESP
 function ESP.Toggle(state)
     ESP.Active = state
 
@@ -113,7 +127,6 @@ function ESP.Toggle(state)
                 setupESPForPlayer(plr)
             else
                 removeESP(plr)
-                -- Disconnect CharacterAdded connection if exists
                 if ESP.CharacterConnections[plr] then
                     ESP.CharacterConnections[plr]:Disconnect()
                     ESP.CharacterConnections[plr] = nil
@@ -123,14 +136,14 @@ function ESP.Toggle(state)
     end
 end
 
--- Automatically handle new players joining
+-- New players joining
 Players.PlayerAdded:Connect(function(plr)
     if plr ~= Players.LocalPlayer and ESP.Active then
         setupESPForPlayer(plr)
     end
 end)
 
--- Clean up when player leaves
+-- Clean up when leaving
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
     if ESP.CharacterConnections[plr] then
