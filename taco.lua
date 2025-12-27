@@ -1,11 +1,11 @@
 -- taco.lua
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 local TacoModule = {}
 local tacoSound
 
--- Stops existing taco sound
 function TacoModule.Stop()
     if tacoSound then
         tacoSound:Stop()
@@ -14,7 +14,6 @@ function TacoModule.Stop()
     end
 end
 
--- Plays the taco sound
 function TacoModule.Play()
     TacoModule.Stop() -- stop existing if any
 
@@ -26,7 +25,16 @@ function TacoModule.Play()
     tacoSound.SoundId = "rbxassetid://142376088" -- Raining Tacos
     tacoSound.Volume = 1
     tacoSound.Looped = true
-    tacoSound.Parent = char.HumanoidRootPart
+    tacoSound.PlaybackSpeed = 1
+    tacoSound.Parent = workspace -- put in workspace so others can hear
+
+    -- Make sound follow player
+    RunService.Heartbeat:Connect(function()
+        if tacoSound and char and char:FindFirstChild("HumanoidRootPart") then
+            tacoSound.Position = char.HumanoidRootPart.Position
+        end
+    end)
+
     tacoSound:Play()
 end
 
