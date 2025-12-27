@@ -257,6 +257,7 @@ makeDraggable(mini)
 -- Commands
 local commands = {
     "/clear",
+    "/esp",
     "/fly",
     "/float",
     "/fling",
@@ -549,17 +550,22 @@ elseif cmd == "/tacos" then
         end
     end
                 
-elseif cmd == "/rocket" then
-    local success, RocketModule = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/rocket.lua"))()
-    end)
-
-    if not success or not RocketModule then
-        printToTerminal("Failed to load Rocket module")
-    else
-        RocketModule.Start(player)
-        printToTerminal("Rocket launched!")
+elseif cmd == "/esp" then
+    if not _G.ESPModule then
+        local success, esp = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/esp.lua", true))() -- Or load from URL
+        end)
+        if success then _G.ESPModule = esp end
     end
+
+    if arg == "off" then
+        if _G.ESPModule then _G.ESPModule.Toggle(false) end
+        printToTerminal("ESP disabled")
+    else
+        if _G.ESPModule then _G.ESPModule.Toggle(true) end
+        printToTerminal("ESP enabled")
+    end
+
                 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
