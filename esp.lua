@@ -4,12 +4,10 @@ local RunService = game:GetService("RunService")
 
 local ESP = {}
 ESP.Active = false
-ESP.Boxes = {}       -- {Player = {SelectionBoxes}}
-ESP.Billboards = {}  -- {Player = BillboardGui}
-ESP.CharacterConnections = {} -- CharacterAdded connections
-ESP.HumanoidConnections = {}  -- Humanoid.Died connections
+ESP.Boxes = {}  -- {Player = {Part = SelectionBox}}
+ESP.Billboards = {} -- {Player = BillboardGui}
 
--- Helper: Create BillboardGui for name
+-- Create BillboardGui
 local function createLabel(plr, char)
     local hrp = char:WaitForChild("HumanoidRootPart")
     local billboard = Instance.new("BillboardGui")
@@ -33,28 +31,13 @@ local function createLabel(plr, char)
     return billboard
 end
 
--- Create SelectionBoxes for all BaseParts
-local function createBoxes(char)
-    local boxes = {}
-    for _, part in pairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            local box = Instance.new("SelectionBox")
-            box.Adornee = part
-            box.LineThickness = 0.05
-            box.SurfaceTransparency = 0.8
-            box.Color3 = Color3.fromRGB(0,255,0)
-            box.Parent = part
-            table.insert(boxes, box)
-        end
-    end
-    return boxes
-end
-
--- Remove ESP for a player
+-- Remove all ESP for a player
 local function removeESP(plr)
     if ESP.Boxes[plr] then
         for _, box in pairs(ESP.Boxes[plr]) do
-            box:Destroy()
+            if box and box.Parent then
+                box:Destroy()
+            end
         end
         ESP.Boxes[plr] = nil
     end
@@ -63,80 +46,63 @@ local function removeESP(plr)
         ESP.Billboards[plr]:Destroy()
         ESP.Billboards[plr] = nil
     end
-
-    if ESP.HumanoidConnections[plr] then
-        ESP.HumanoidConnections[plr]:Disconnect()
-        ESP.HumanoidConnections[plr] = nil
-    end
 end
 
--- Apply ESP to a character
-local function setupESPForCharacter(plr, char)
-    removeESP(plr)
-
-    ESP.Boxes[plr] = createBoxes(char)
-    ESP.Billboards[plr] = createLabel(plr, char)
-
-    -- Connect to Humanoid.Died to remove ESP
-    local humanoid = char:FindFirstChild("Humanoid")
-    if humanoid then
-        ESP.HumanoidConnections[plr] = humanoid.Died:Connect(function()
-            removeESP(plr)
-        end)
-    end
-end
-
--- Apply ESP to a player (handles respawns)
-local function setupESPForPlayer(plr)
-    if plr.Character then
-        setupESPForCharacter(plr, plr.Character)
-    end
-
-    -- Disconnect old connection if it exists
-    if ESP.CharacterConnections[plr] then
-        ESP.CharacterConnections[plr]:Disconnect()
-    end
-
-    ESP.CharacterConnections[plr] = plr.CharacterAdded:Connect(function(char)
-        if ESP.Active then
-            setupESPForCharacter(plr, char)
-        end
-    end)
-end
-
--- Toggle ESP
-function ESP.Toggle(state)
-    ESP.Active = state
-
+-- Apply ESP continuously
+local function updateESP()
     for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= Players.LocalPlayer then
-            if state then
-                setupESPForPlayer(plr)
-            else
-                removeESP(plr)
-                if ESP.CharacterConnections[plr] then
-                    ESP.CharacterConnections[plr]:Disconnect()
-                    ESP.CharacterConnections[plr] = nil
+        if plr ~= Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            -- Billboard
+            if not ESP.Billboards[plr] then
+                ESP.Billboards[plr] = createLabel(plr, plr.Character)
+            end
+
+            -- SelectionBoxes
+            if not ESP.Boxes[plr] then ESP.Boxes[plr] = {} end
+            for _, part in pairs(plr.Character:GetDescendants()) do
+                if part:IsA("BasePart") and not ESP.Boxes[plr][part] then
+                    local box = Instance.new("SelectionBox")
+                    box.Adornee = part
+                    box.LineThickness = 0.05
+                    box.SurfaceTransparency = 0.8
+                    box.Color3 = Color3.fromRGB(0,255,0)
+                    box.Parent = part
+                    ESP.Boxes[plr][part] = box
                 end
             end
         end
     end
 end
 
--- New players joining
-Players.PlayerAdded:Connect(function(plr)
-    if plr ~= Players.LocalPlayer and ESP.Active then
-        setupESPForPlayer(plr)
+-- Toggle ESP
+function ESP.Toggle(state)
+    ESP.Active = state
+
+    if not state then
+        for _, plr in pairs(Players:GetPlayers()) do
+            removeESP(plr)
+        end
+    end
+end
+
+-- Run loop every frame to update ESP
+RunService.RenderStepped:Connect(function()
+    if ESP.Active then
+        updateESP()
     end
 end)
 
--- Clean up when leaving
+-- Auto-apply to new players
+Players.PlayerAdded:Connect(function(plr)
+    plr.CharacterAdded:Connect(function()
+        if ESP.Active then
+            updateESP()
+        end
+    end)
+end)
+
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
-    if ESP.CharacterConnections[plr] then
-        ESP.CharacterConnections[plr]:Disconnect()
-        ESP.CharacterConnections[plr] = nil
-    end
 end)
 
 return ESP
