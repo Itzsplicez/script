@@ -692,6 +692,24 @@ elseif cmd == "/spectate" then
         end
     end
 
+elseif cmd == "/freecam" then
+    local success, freecam = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/freecam.lua"))()
+    end)
+
+    if not success or not freecam then
+        printToTerminal("Failed to load Freecam module")
+        return
+    end
+
+    if arg == "off" then
+        freecam.Stop()
+        printToTerminal("Freecam disabled")
+    else
+        local num = tonumber(arg)
+        freecam.Start(num or 1)
+        printToTerminal("Freecam enabled at speed " .. (num or 1))
+    end
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
