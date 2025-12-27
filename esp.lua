@@ -1,6 +1,4 @@
--- Simple Name ESP Module (Green, Toggleable)
--- Executor: Delta
-
+-- Simple Name ESP Module (Green, Toggleable, Persistent)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -44,6 +42,7 @@ local function createESP(player)
                 billboard:Destroy()
                 if conn then conn:Disconnect() end
                 ESP.Billboards[player] = nil
+                ESP.Connections[player] = nil
                 return
             end
 
@@ -59,6 +58,7 @@ local function createESP(player)
         ESP.Billboards[player] = billboard
     end
 
+    -- Always apply ESP even after death/respawn
     if player.Character then
         onCharacterAdded(player.Character)
     end
@@ -86,6 +86,7 @@ function ESP.Toggle(state)
         end
         Players.PlayerAdded:Connect(createESP)
     else
+        -- Remove ESP for everyone
         for player, _ in pairs(ESP.Billboards) do
             removeESP(player)
         end
