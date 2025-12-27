@@ -264,6 +264,7 @@ local commands = {
     "/noclip",
     "/reset",
     "/speed",
+    "/teleport",
     "/swimfly",
 }
 
@@ -422,7 +423,24 @@ elseif cmd == "/jumpboost" then
         end
     end
 
+elseif cmd == "/teleport" then
+    local success, teleportModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/teleport.lua"))()
+    end)
 
+    if not success or not teleportModule then
+        printToTerminal("Failed to load teleport module")
+    else
+        local targetPlayer = getPlayerFromArg(arg)
+        if targetPlayer then
+            teleportModule.ToPlayer(targetPlayer)
+            printToTerminal("Teleported to " .. targetPlayer.Name)
+        else
+            printToTerminal("Player not found: " .. arg)
+        end
+    end
+
+                
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
