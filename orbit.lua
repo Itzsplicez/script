@@ -2,8 +2,9 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
 
--- Reuse module if already loaded
+-- Reuse if already loaded
 if _G.OrbitModule then
     return _G.OrbitModule
 end
@@ -13,14 +14,22 @@ local orbiting = false
 local orbitConnection
 
 local radius = 6
-local speed = 2
+local speed = 3
 local angle = 0
+
 local targetHRP
 local myHRP
+local oldCameraSubject
 
 local function getHRP(plr)
     if plr and plr.Character then
         return plr.Character:FindFirstChild("HumanoidRootPart")
+    end
+end
+
+local function getHumanoid(plr)
+    if plr and plr.Character then
+        return plr.Character:FindFirstChildOfClass("Humanoid")
     end
 end
 
@@ -29,9 +38,15 @@ function OrbitModule.Start(targetPlayer, orbitSpeed, orbitRadius)
 
     targetHRP = getHRP(targetPlayer)
     myHRP = getHRP(player)
-    if not targetHRP or not myHRP then return end
+    local targetHumanoid = getHumanoid(targetPlayer)
 
-    speed = orbitSpeed or 2
+    if not targetHRP or not myHRP or not targetHumanoid then return end
+
+    -- Save camera state
+    oldCameraSubject = camera.CameraSubject
+    camera.CameraSubject = targetHumanoid
+
+    speed = orbitSpeed or 3
     radius = orbitRadius or 6
     angle = 0
     orbiting = true
@@ -40,21 +55,32 @@ function OrbitModule.Start(targetPlayer, orbitSpeed, orbitRadius)
         if not orbiting or not targetHRP or not myHRP then return end
 
         angle += speed * dt * 60
+
         local offset = Vector3.new(
             math.cos(angle) * radius,
             0,
             math.sin(angle) * radius
         )
 
-        myHRP.CFrame = CFrame.new(targetHRP.Position + offset, targetHRP.Position)
+        myHRP.CFrame = CFrame.new(
+            targetHRP.Position + offset,
+            targetHRP.Position
+        )
     end)
 end
 
 function OrbitModule.Stop()
     orbiting = false
+
     if orbitConnection then
         orbitConnection:Disconnect()
         orbitConnection = nil
+    end
+
+    -- Restore camera
+    if oldCameraSubject then
+        camera.CameraSubject = oldCameraSubject
+        oldCameraSubject = nil
     end
 end
 
