@@ -548,7 +548,19 @@ elseif cmd == "/tacos" then
             printToTerminal("Raining Tacos already playing")
         end
     end
+                
+elseif cmd == "/rocket" then
+    -- Load rocket module
+    local success, RocketModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUsername/YourRepo/main/rocket.lua"))()
+    end)
 
+    if not success or not RocketModule then
+        printToTerminal("Failed to load Rocket module")
+    else
+        RocketModule.Start(player)
+        printToTerminal("Rocket launched!")
+    end
 
                 
         else
