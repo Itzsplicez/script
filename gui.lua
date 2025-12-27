@@ -260,6 +260,7 @@ local commands = {
     "/fling",
     "/help",
     "/infjump",
+    "/jumpboost",
     "/noclip",
     "/reset",
     "/speed",
