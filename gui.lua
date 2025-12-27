@@ -267,6 +267,7 @@ local commands = {
     "/reset",
     "/speed",
     "/teleport",
+    "/tacos",
     "/swimfly",
 }
 
@@ -459,7 +460,25 @@ elseif cmd == "/float" then
             printToTerminal("Float enabled")
         end
     end
-               
+
+elseif cmd == "/tacos" then
+    local success, TacoModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/taco.lua"))()
+    end)
+
+    if not success or not TacoModule then
+        printToTerminal("Failed to load taco module")
+    else
+        if arg == "off" then
+            TacoModule.Stop()
+            printToTerminal("Raining Tacos stopped")
+        else
+            TacoModule.Play()
+            printToTerminal("Raining Tacos playing")
+        end
+    end
+
+                
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
