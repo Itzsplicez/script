@@ -5,16 +5,21 @@ local LocalPlayer = Players.LocalPlayer
 
 local ESP = {}
 ESP.Active = false
-ESP.Indicators = {} -- [Player] = {BillboardGui, Box, TextLabel}
+ESP.Indicators = {} -- [Player] = {BillboardGui, Box, TextLabel, Connection}
 
 -- Create ESP for a player
 local function createESP(player)
     if player == LocalPlayer then return end
-    if ESP.Indicators[player] then return end -- Already exists
 
     local function onCharacterAdded(character)
         local hrp = character:WaitForChild("HumanoidRootPart", 5)
         if not hrp then return end
+
+        -- If already exists (player respawned), reassign Adornee
+        if ESP.Indicators[player] then
+            ESP.Indicators[player].Billboard.Adornee = hrp
+            return
+        end
 
         -- Billboard
         local billboard = Instance.new("BillboardGui")
@@ -51,6 +56,7 @@ local function createESP(player)
         -- Update distance every frame
         ESP.Indicators[player].Connection = RunService.RenderStepped:Connect(function()
             if not character or not character.Parent then
+                -- Character is gone, clean up
                 billboard:Destroy()
                 if ESP.Indicators[player].Connection then
                     ESP.Indicators[player].Connection:Disconnect()
@@ -68,6 +74,7 @@ local function createESP(player)
         end)
     end
 
+    -- Connect to character
     if player.Character then
         onCharacterAdded(player.Character)
     end
