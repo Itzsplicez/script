@@ -17,7 +17,7 @@ local orbitConnection
 
 -- Orbit settings
 local radius = 6
-local speed = 3
+local speed = 1
 local angle = 0
 
 -- Freecam settings
