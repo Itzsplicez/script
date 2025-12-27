@@ -4,15 +4,14 @@ local RunService = game:GetService("RunService")
 
 local ESP = {}
 ESP.Active = false
-ESP.Boxes = {}
-ESP.Billboards = {}
-ESP.Connections = {} -- Humanoid.Died connections
+ESP.Boxes = {}       -- {Player = {SelectionBoxes}}
+ESP.Billboards = {}  -- {Player = BillboardGui}
 ESP.CharacterConnections = {} -- CharacterAdded connections
+ESP.HumanoidConnections = {}  -- Humanoid.Died connections
 
--- Create BillboardGui for name
+-- Helper: Create BillboardGui for name
 local function createLabel(plr, char)
     local hrp = char:WaitForChild("HumanoidRootPart")
-
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESPLabel"
     billboard.Size = UDim2.new(0, 200, 0, 50)
@@ -22,11 +21,11 @@ local function createLabel(plr, char)
     billboard.Parent = hrp
 
     local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.Size = UDim2.new(1,0,1,0)
     textLabel.BackgroundTransparency = 1
     textLabel.Font = Enum.Font.SourceSansBold
     textLabel.TextSize = 14
-    textLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    textLabel.TextColor3 = Color3.fromRGB(0,255,0)
     textLabel.TextStrokeTransparency = 0
     textLabel.Text = plr.Name
     textLabel.Parent = billboard
@@ -43,7 +42,7 @@ local function createBoxes(char)
             box.Adornee = part
             box.LineThickness = 0.05
             box.SurfaceTransparency = 0.8
-            box.Color3 = Color3.fromRGB(0, 255, 0)
+            box.Color3 = Color3.fromRGB(0,255,0)
             box.Parent = part
             table.insert(boxes, box)
         end
@@ -53,11 +52,6 @@ end
 
 -- Remove ESP for a player
 local function removeESP(plr)
-    if ESP.Connections[plr] then
-        ESP.Connections[plr]:Disconnect()
-        ESP.Connections[plr] = nil
-    end
-
     if ESP.Boxes[plr] then
         for _, box in pairs(ESP.Boxes[plr]) do
             box:Destroy()
@@ -69,52 +63,45 @@ local function removeESP(plr)
         ESP.Billboards[plr]:Destroy()
         ESP.Billboards[plr] = nil
     end
+
+    if ESP.HumanoidConnections[plr] then
+        ESP.HumanoidConnections[plr]:Disconnect()
+        ESP.HumanoidConnections[plr] = nil
+    end
 end
 
 -- Apply ESP to a character
 local function setupESPForCharacter(plr, char)
     removeESP(plr)
 
-    -- Wait for all parts to load
-    char:WaitForChild("HumanoidRootPart")
     ESP.Boxes[plr] = createBoxes(char)
     ESP.Billboards[plr] = createLabel(plr, char)
 
-    -- Rebuild boxes if new parts are added (like accessories)
-    ESP.Connections[plr] = char.DescendantAdded:Connect(function(desc)
-        if desc:IsA("BasePart") then
-            local box = Instance.new("SelectionBox")
-            box.Adornee = desc
-            box.LineThickness = 0.05
-            box.SurfaceTransparency = 0.8
-            box.Color3 = Color3.fromRGB(0, 255, 0)
-            box.Parent = desc
-            table.insert(ESP.Boxes[plr], box)
-        end
-    end)
-
-    -- Remove ESP on death
+    -- Connect to Humanoid.Died to remove ESP
     local humanoid = char:FindFirstChild("Humanoid")
     if humanoid then
-        ESP.Connections[plr.."died"] = humanoid.Died:Connect(function()
+        ESP.HumanoidConnections[plr] = humanoid.Died:Connect(function()
             removeESP(plr)
         end)
     end
 end
 
--- Apply ESP for a player (handles respawns)
+-- Apply ESP to a player (handles respawns)
 local function setupESPForPlayer(plr)
     if plr.Character then
         setupESPForCharacter(plr, plr.Character)
     end
 
-    if not ESP.CharacterConnections[plr] then
-        ESP.CharacterConnections[plr] = plr.CharacterAdded:Connect(function(char)
-            if ESP.Active then
-                setupESPForCharacter(plr, char)
-            end
-        end)
+    -- Disconnect old connection if it exists
+    if ESP.CharacterConnections[plr] then
+        ESP.CharacterConnections[plr]:Disconnect()
     end
+
+    ESP.CharacterConnections[plr] = plr.CharacterAdded:Connect(function(char)
+        if ESP.Active then
+            setupESPForCharacter(plr, char)
+        end
+    end)
 end
 
 -- Toggle ESP
