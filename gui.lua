@@ -183,6 +183,51 @@ local function printToTerminal(text)
     outputFrame.CanvasPosition = Vector2.new(0, outputFrame.CanvasSize.Y.Offset)
 end
 
+local function executeCommand(cmdText)
+    local text = cmdText:lower():gsub("^%s*(.-)%s*$", "%1")
+    local cmd, arg = text:match("^(%S+)%s*(.-)$") -- note the pattern change to allow spaces in arg
+
+    if cmd == "/clear" then
+        for _, child in ipairs(outputFrame:GetChildren()) do
+            if child:IsA("TextLabel") then child:Destroy() end
+        end
+        outputFrame.CanvasPosition = Vector2.new(0,0)
+        printToTerminal("Terminal cleared")
+
+    elseif cmd == "/infjump" then
+        if arg == "off" then
+            if jumpModule then jumpModule.Disable() end
+            printToTerminal("InfJump disabled")
+        else
+            if jumpModule then jumpModule.Enable() end
+            printToTerminal("InfJump enabled")
+        end
+
+    elseif cmd == "/speed" then
+        local num = tonumber(arg)
+        local char = player.Character
+        if arg == "off" then
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = 20
+            end
+            printToTerminal("Speed reset to default (20)")
+        elseif num and num >= 1 and num <= 100 then
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = num
+            end
+            printToTerminal("Speed set to "..num)
+        else
+            printToTerminal("Invalid speed! Use /speed 1-100")
+        end
+
+    -- continue with all your other commands here...
+    elseif cmd == "/loop" then
+        -- ignore, handled separately
+    else
+        printToTerminal("Unknown command: "..cmdText)
+    end
+end
+
 -- Input box
 local inputBox = Instance.new("TextBox")
 inputBox.Size = UDim2.new(1, -20, 0, 40)
@@ -441,9 +486,9 @@ elseif cmd == "/teleport" then
             printToTerminal("Player not found: " .. arg)
         end
     end
+                
 elseif cmd == "/loop" then
     if arg == "off" then
-        -- Stop all active loops
         for loopCmd, loopInfo in pairs(activeLoops) do
             if loopInfo.Connection then
                 loopInfo.Connection:Disconnect()
@@ -452,8 +497,7 @@ elseif cmd == "/loop" then
         activeLoops = {}
         printToTerminal("All loops stopped")
     else
-        -- Check if command exists
-        local loopCommand, loopArg = arg:match("^(%S+)%s*(%S*)$")
+        local loopCommand, loopArg = arg:match("^(%S+)%s*(.*)$") -- allow space in arguments
         if not loopCommand then
             printToTerminal("Invalid loop command")
         else
@@ -465,15 +509,10 @@ elseif cmd == "/loop" then
                 activeLoops[loopCommand] = nil
             end
 
-            -- Start new loop
-            local RunService = game:GetService("RunService")
             local conn
-            conn = RunService.Heartbeat:Connect(function(step)
+            conn = RunService.Heartbeat:Connect(function()
                 if tick() - (activeLoops[loopCommand] and activeLoops[loopCommand].LastRun or 0) >= 1 then
-                    -- Simulate input as if the user typed the command
-                    inputBox.Text = loopCommand .. (loopArg ~= "" and (" " .. loopArg) or "")
-                    inputBox:CaptureFocus()
-                    inputBox:ReleaseFocus(true)
+                    executeCommand(loopCommand .. (loopArg ~= "" and (" " .. loopArg) or ""))
                     activeLoops[loopCommand].LastRun = tick()
                 end
             end)
@@ -482,6 +521,7 @@ elseif cmd == "/loop" then
             printToTerminal("Loop started for command: " .. loopCommand)
         end
     end
+
 
                 
         else
