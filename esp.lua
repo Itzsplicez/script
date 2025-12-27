@@ -1,4 +1,4 @@
--- Simple Name ESP Module (Green, Toggleable, Persistent)
+-- Simple Green Name ESP with Full Toggle
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
@@ -7,11 +7,12 @@ local ESP = {}
 ESP.Active = false
 ESP.Billboards = {}      -- [Player] = BillboardGui
 ESP.Connections = {}     -- [Player] = {RenderStepped, CharacterAdded}
+ESP.PlayerAddedConn = nil
 
 -- Create ESP for a player
 local function createESP(player)
     if player == LocalPlayer then return end
-    if ESP.Billboards[player] then return end -- Already exists
+    if ESP.Billboards[player] then return end
 
     local function onCharacterAdded(character)
         local hrp = character:WaitForChild("HumanoidRootPart", 5)
@@ -32,20 +33,19 @@ local function createESP(player)
         text.TextStrokeTransparency = 0
         text.TextScaled = true
         text.Font = Enum.Font.SourceSansBold
+        text.Text = player.Name
         text.Parent = billboard
 
-        -- Update every frame
+        -- Update loop
         local rsConn
         rsConn = RunService.RenderStepped:Connect(function()
-            if not ESP.Active then return end
-            if not character or not character.Parent then
-                billboard:Destroy()
+            if not ESP.Active or not character or not character.Parent then
                 if rsConn then rsConn:Disconnect() end
+                if billboard then billboard:Destroy() end
                 ESP.Billboards[player] = nil
                 ESP.Connections[player] = nil
                 return
             end
-
             text.Text = player.Name
         end)
 
@@ -54,7 +54,7 @@ local function createESP(player)
         ESP.Connections[player].RenderStepped = rsConn
     end
 
-    -- Connect CharacterAdded and store it so we can disconnect later
+    -- Store CharacterAdded connection
     local charConn = player.CharacterAdded:Connect(onCharacterAdded)
     ESP.Connections[player] = ESP.Connections[player] or {}
     ESP.Connections[player].CharacterAdded = charConn
@@ -85,21 +85,24 @@ end
 function ESP.Toggle(state)
     ESP.Active = state
     if state then
+        -- Create ESP for all players
         for _, player in ipairs(Players:GetPlayers()) do
             createESP(player)
         end
         -- Connect new players
         ESP.PlayerAddedConn = Players.PlayerAdded:Connect(createESP)
     else
-        -- Disconnect PlayerAdded connection
+        -- Disconnect PlayerAdded
         if ESP.PlayerAddedConn then
             ESP.PlayerAddedConn:Disconnect()
             ESP.PlayerAddedConn = nil
         end
-        -- Remove ESP for everyone
+        -- Remove ESP for all players and destroy everything
         for player, _ in pairs(ESP.Billboards) do
             removeESP(player)
         end
+        ESP.Billboards = {}
+        ESP.Connections = {}
     end
 end
 
