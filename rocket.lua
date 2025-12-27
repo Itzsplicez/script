@@ -1,13 +1,15 @@
--- rocket.lua
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ChatService = game:GetService("Chat")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RocketModule = {}
 local lifting = false
 local liftConnection
 
-function RocketModule.Start(player)
+local player = Players.LocalPlayer
+local chatEvent = ReplicatedStorage:WaitForChild("DefaultChatSystemChatEvents"):WaitForChild("SayMessageRequest")
+
+function RocketModule.Start()
     if lifting then return end
     lifting = true
 
@@ -15,37 +17,40 @@ function RocketModule.Start(player)
     local hrp = char:WaitForChild("HumanoidRootPart")
     local humanoid = char:FindFirstChild("Humanoid")
 
-    -- Countdown 3..2..1 said in chat
-    for i = 3,1,-1 do
-        if char:FindFirstChild("Head") then
-            ChatService:Chat(char.Head, tostring(i), Enum.ChatColor.Red)
-        end
+    -- Countdown
+    for i = 3,2,1 do
+        chatEvent:FireServer(tostring(i), "All")
         wait(1)
     end
+    chatEvent:FireServer("BLASTOFF!", "All")
 
-    -- BLASTOFF message
-    if char:FindFirstChild("Head") then
-        ChatService:Chat(char.Head, "BLASTOFF!", Enum.ChatColor.Red)
-    end
-
-    -- Lift player upwards continuously until death/reset
-    local speed = 150 -- studs per second
+    -- Lift player for 4 seconds
+    local duration = 4
+    local speed = 150
+    local elapsed = 0
     liftConnection = RunService.RenderStepped:Connect(function(dt)
         if hrp and hrp.Parent then
             hrp.CFrame = hrp.CFrame + Vector3.new(0, speed * dt, 0)
         end
     end)
 
-    -- Wait until humanoid dies / breaks
-    if humanoid then
-        humanoid.Died:Wait()
+    while elapsed < duration do
+        wait(0.1)
+        elapsed = elapsed + 0.1
     end
 
-    -- Stop the lift
     if liftConnection then
         liftConnection:Disconnect()
         liftConnection = nil
     end
+
+    -- Reset character
+    if humanoid then
+        humanoid.Health = 0
+    end
+
+    -- Say BOOM! in normal chat
+    chatEvent:FireServer("BOOM!", "All")
 
     lifting = false
 end
