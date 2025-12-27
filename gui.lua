@@ -257,6 +257,7 @@ makeDraggable(mini)
 -- Commands
 local commands = {
     "/clear",
+    "/doors",
     "/esp",
     "/fly",
     "/float",
@@ -564,6 +565,22 @@ elseif cmd == "/esp" then
     else
         if _G.ESPModule then _G.ESPModule.Toggle(true) end
         printToTerminal("ESP enabled")
+    end
+                
+elseif cmd == "/doors" then
+    if not _G.ESPModule then
+        local success, esp = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/doors.lua", true))() -- Or load from URL
+        end)
+        if success then _G.ESPModule = esp end
+    end
+
+    if arg == "off" then
+        if _G.ESPModule then _G.ESPModule.Toggle(false) end
+        printToTerminal("doors cannot be disabled")
+    else
+        if _G.ESPModule then _G.ESPModule.Toggle(true) end
+        printToTerminal("doors enabled")
     end
 
                 
