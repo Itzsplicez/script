@@ -110,7 +110,7 @@ end
 
 -- GUI setup
 local gui = Instance.new("ScreenGui")
-gui.Name = "MilkyWayV1"
+gui.Name = "Itzsplicez"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -125,7 +125,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -100, 0, 40)
 title.Position = UDim2.new(0, 10, 0, 10)
 title.BackgroundTransparency = 1
-title.Text = "MilkyWay Terminal"
+title.Text = "Itzsplicez Terminal"
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 26
@@ -292,18 +292,18 @@ inputBox.FocusLost:Connect(function(enterPressed)
             local char = player.Character
             if arg == "off" then
                 if char and char:FindFirstChild("Humanoid") then
-                    char.Humanoid.WalkSpeed = 20
+                    char.Humanoid.WalkSpeed = 16
                 end
-                printToTerminal("Speed reset to default (20)")
+                printToTerminal("Speed reset to default (16)")
             else
                 local num = tonumber(arg)
-                if num and num >= 1 and num <= 100 then
+                if num and num >= 1 and num <= 500 then
                     if char and char:FindFirstChild("Humanoid") then
                         char.Humanoid.WalkSpeed = num
                     end
                     printToTerminal("Speed set to "..num)
                 else
-                    printToTerminal("Invalid speed! Use /speed 1-100")
+                    printToTerminal("Invalid speed! Use /speed 1-500")
                 end
             end
 
@@ -399,6 +399,28 @@ elseif cmd == "/swimfly" then
         end
     end
 
+elseif cmd == "/jumpboost" then
+    local success, jumpBoostModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/jumpboost.lua"))()
+    end)
+
+    if not success or not jumpBoostModule then
+        printToTerminal("Failed to load jumpboost module")
+    else
+        if arg == "off" then
+            jumpBoostModule.Disable()
+            printToTerminal("JumpBoost disabled")
+        else
+            local num = tonumber(arg)
+            if num and num >= 10 and num <= 500 then
+                jumpBoostModule.Enable(num)
+                printToTerminal("JumpBoost enabled with power " .. num)
+            else
+                printToTerminal("Invalid jump power! Use /jumpboost 10-500 or /jumpboost off")
+            end
+        end
+    end
+
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
@@ -408,4 +430,4 @@ elseif cmd == "/swimfly" then
     end
 end)
 
-print("MilkyWay Terminal loaded successfully")
+print("Itzsplicez Terminal loaded successfully")
