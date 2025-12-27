@@ -1,56 +1,78 @@
--- selfspin.lua
--- Spins your player around the Y-axis only
-
+-- Fling Module
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer
+local FlingModule = {}
+FlingModule.Active = false
+FlingModule.Connection = nil
+FlingModule.Thrust = nil
 
-_G.MilkyWaySpin = _G.MilkyWaySpin or {
-    Enabled = false,
-    Connection = nil
-}
+local LocalPlayer = Players.LocalPlayer
 
-local state = _G.MilkyWaySpin
+-- Helper: Find players
+local function findPlayers(searchString)
+    local foundPlayers = {}
+    local strl = searchString:lower()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if strl == "all" or strl == "everyone" then
+            table.insert(foundPlayers, player)
+        elseif strl == "others" and player ~= LocalPlayer then
+            table.insert(foundPlayers, player)
+        elseif strl == "me" and player == LocalPlayer then
+            table.insert(foundPlayers, player)
+        elseif player.Name:lower():sub(1, #searchString) == strl then
+            table.insert(foundPlayers, player)
+        end
+    end
+    return foundPlayers
+end
 
-local function enable()
-    if state.Enabled then return end
-    state.Enabled = true
-
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+-- Aggressive Fling
+local function aggressiveFling(target)
+    local char = LocalPlayer.Character
+    if not (char and target and target.Character) then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
-    -- Spin only around Y-axis
-    state.Connection = RunService.Heartbeat:Connect(function(deltaTime)
-        if not state.Enabled or not hrp then return end
-        local currentCFrame = hrp.CFrame
-        local rotation = CFrame.Angles(0, math.rad(200 * deltaTime), 0) -- 200 degrees per second
-        hrp.CFrame = currentCFrame * rotation
+    -- Create BodyThrust
+    FlingModule.Thrust = Instance.new("BodyThrust")
+    FlingModule.Thrust.Name = "FlingThrust"
+    FlingModule.Thrust.Force = Vector3.new(9999,9999,9999)
+    FlingModule.Thrust.Location = hrp.Position
+    FlingModule.Thrust.Parent = hrp
+
+    -- Start fling loop
+    FlingModule.Connection = RunService.Heartbeat:Connect(function()
+        if not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
+            FlingModule.Stop()
+            return
+        end
+        hrp.CFrame = target.Character.HumanoidRootPart.CFrame
+        FlingModule.Thrust.Location = target.Character.HumanoidRootPart.Position
     end)
 end
 
-local function disable()
-    state.Enabled = false
-    if state.Connection then
-        state.Connection:Disconnect()
-        state.Connection = nil
+-- Start fling (single target)
+function FlingModule.Start(targetString)
+    if FlingModule.Active then return end
+    local targets = findPlayers(targetString)
+    if #targets == 0 then return false, "Player not found" end
+    aggressiveFling(targets[1])
+    FlingModule.Active = true
+    return true, "Fling started on "..targets[1].Name
+end
+
+-- Stop fling
+function FlingModule.Stop()
+    FlingModule.Active = false
+    if FlingModule.Connection then
+        FlingModule.Connection:Disconnect()
+        FlingModule.Connection = nil
+    end
+    if FlingModule.Thrust then
+        FlingModule.Thrust:Destroy()
+        FlingModule.Thrust = nil
     end
 end
 
-player.CharacterAdded:Connect(function()
-    if state.Enabled then
-        task.wait(0.5)
-        enable()
-    end
-end)
-
-_G.ToggleSpin = function(on)
-    if on then
-        enable()
-    else
-        disable()
-    end
-end
-
--- Auto enable if desired
--- enable()
+return FlingModule
