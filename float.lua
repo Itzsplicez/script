@@ -2,6 +2,12 @@
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- Check for existing module
+if _G.FloatModule then
+    return _G.FloatModule
+end
 
 local floatConnection
 local platform
@@ -31,7 +37,6 @@ function FloatModule.Start()
         if not floating or not char or not char:FindFirstChild("HumanoidRootPart") then return end
 
         local hrp = char.HumanoidRootPart
-        local UserInputService = game:GetService("UserInputService")
 
         -- Adjust targetY with input
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
@@ -57,5 +62,8 @@ function FloatModule.Stop()
         platform = nil
     end
 end
+
+-- Save globally so multiple loads reference the same module
+_G.FloatModule = FloatModule
 
 return FloatModule
