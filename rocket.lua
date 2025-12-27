@@ -1,6 +1,7 @@
 -- rocket.lua
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ChatService = game:GetService("Chat")
 
 local RocketModule = {}
 local lifting = false
@@ -45,20 +46,22 @@ function RocketModule.Start(player)
         wait(1)
     end
 
-    -- Lift player for 4 seconds
-    local duration = 4
-    local speed = 50
-    local elapsed = 0
+    -- Lift player to a fixed height
+    local targetHeight = hrp.Position.Y + 200 -- 200 studs above current position
+    local speed = 100
 
     liftConnection = RunService.RenderStepped:Connect(function(dt)
         if hrp and hrp.Parent then
-            hrp.CFrame = hrp.CFrame + Vector3.new(0, speed * dt, 0)
+            local currentY = hrp.Position.Y
+            if currentY < targetHeight then
+                hrp.CFrame = hrp.CFrame + Vector3.new(0, speed * dt, 0)
+            end
         end
     end)
 
-    while elapsed < duration do
-        wait(0.1)
-        elapsed = elapsed + 0.1
+    -- Wait until we reach target height
+    while hrp.Position.Y < targetHeight do
+        wait(0.05)
     end
 
     if liftConnection then
@@ -71,8 +74,13 @@ function RocketModule.Start(player)
         char:BreakJoints()
     end
 
-    -- Show BOOM to everyone
+    -- BOOM message to all players' screens
     showMessageForAll("BOOM!", 2)
+
+    -- Announce BOOM in chat so the whole server knows
+    if char and char:FindFirstChild("Head") then
+        ChatService:Chat(char.Head, "BOOM!", Enum.ChatColor.Red)
+    end
 
     lifting = false
 end
