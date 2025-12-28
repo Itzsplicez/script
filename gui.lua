@@ -272,6 +272,7 @@ local commands = {
     "/setspawn",
     "/spawn",
     "/spin",
+    "/sit",
     "/speed",
     "/swimfly",
     "/spectate",
@@ -831,6 +832,17 @@ elseif cmd == "/spawn" then
         printToTerminal(msg)
     end
 
+elseif cmd == "/sit" then
+    -- Load the module only when the command is used
+    local success, SitModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/sit.lua"))()
+    end)
+    if not success or not SitModule then
+        printToTerminal("Failed to load Sit module")
+    else
+        local ok, msg = SitModule.Toggle(player)
+        printToTerminal(msg)
+    end
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
