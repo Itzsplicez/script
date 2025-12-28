@@ -10,6 +10,8 @@ local dashSpeed = 100
 local dashDuration = 0.2
 local cooldown = 1
 local dashConnection
+local dashButton
+local inputConnection
 
 -- Helper to get HumanoidRootPart
 local function getHRP()
@@ -48,7 +50,7 @@ local function doDash()
 end
 
 -- Keyboard dash (Shift key)
-UserInputService.InputBegan:Connect(function(input, processed)
+inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.KeyCode == Enum.KeyCode.LeftShift then
         doDash()
@@ -56,32 +58,49 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- Mobile GUI button
-local gui = player:WaitForChild("PlayerGui")
-local dashButton = Instance.new("TextButton")
-dashButton.Size = UDim2.new(0, 100, 0, 50)
-dashButton.Position = UDim2.new(0.5, -50, 0.8, 0)
-dashButton.BackgroundColor3 = Color3.fromRGB(128, 0, 255)
-dashButton.Text = "Dash"
-dashButton.TextColor3 = Color3.new(1, 1, 1)
-dashButton.Font = Enum.Font.SourceSansBold
-dashButton.TextScaled = true
-dashButton.Parent = gui
-dashButton.Visible = false -- show only for mobile
+local function createButton()
+    if dashButton then return end
 
--- Detect mobile
-if UserInputService.TouchEnabled then
+    local gui = player:WaitForChild("PlayerGui")
+    dashButton = Instance.new("TextButton")
+    dashButton.Size = UDim2.new(0, 100, 0, 50)
+    dashButton.Position = UDim2.new(0.5, -50, 0.8, 0)
+    dashButton.AnchorPoint = Vector2.new(0.5, 0)
+    dashButton.BackgroundColor3 = Color3.fromRGB(128, 0, 255)
+    dashButton.Text = "Dash"
+    dashButton.TextColor3 = Color3.new(1, 1, 1)
+    dashButton.Font = Enum.Font.SourceSansBold
+    dashButton.TextScaled = true
+    dashButton.ZIndex = 10
+    dashButton.Parent = gui
     dashButton.Visible = true
+
+    dashButton.MouseButton1Click:Connect(doDash)
 end
 
-dashButton.MouseButton1Click:Connect(doDash)
+-- Only show button if on mobile
+if UserInputService.TouchEnabled then
+    createButton()
+end
 
+-- Stop function
 function Dash.Stop()
+    -- Disconnect dash heartbeat
     if dashConnection then
         dashConnection:Disconnect()
         dashConnection = nil
     end
+
+    -- Disconnect keyboard input
+    if inputConnection then
+        inputConnection:Disconnect()
+        inputConnection = nil
+    end
+
+    -- Destroy mobile button
     if dashButton then
         dashButton:Destroy()
+        dashButton = nil
     end
 end
 
