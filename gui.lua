@@ -836,7 +836,7 @@ if cmd == "/follow" then
     -- Load Follow module once
     if not _G.FollowModule then
         local success, mod = pcall(function()
-            return loadstring(game:HttpGet("https://raw.githubusercontent.com/YourRepo/follow.lua"))()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/follow.lua"))()
         end)
 
         if success and mod then
