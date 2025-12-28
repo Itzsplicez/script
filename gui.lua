@@ -805,57 +805,27 @@ elseif cmd == "/teamaimbot" then
         _G.TeamAimbot.Start()
         printToTerminal("TeamAimbot enabled (ignoring teammates)")
     end
-
--- Ensure the module is loaded only once
-if not _G.WaypointsModule then
-    local success, module = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/waypoints.lua"))()
+-- /setspawn
+elseif cmd == "/setspawn" then
+    local success, SpawnModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/spawn.lua"))()
     end)
-    if success and module then
-        _G.WaypointsModule = module
+    if not success or not SpawnModule then
+        printToTerminal("Failed to load Spawn module")
     else
-        printToTerminal("Failed to load Waypoints module")
-    end
-end
-local WaypointsModule = _G.WaypointsModule
-
--- /setwaypoint or /swp
-elseif cmd == "/setwaypoint" or cmd == "/swp" then
-    if not WaypointsModule then return end
-    if arg == "" then
-        printToTerminal("Usage: /setwaypoint <name>")
-    else
-        local ok, msg = WaypointsModule.Set(player, arg)
+        local ok, msg = SpawnModule.Set(player)
         printToTerminal(msg)
     end
 
--- /waypoint
-elseif cmd == "/waypoint" then
-    if not WaypointsModule then return end
-    if arg == "" then
-        printToTerminal("Usage: /waypoint <name>")
+-- /spawn
+elseif cmd == "/spawn" then
+    local success, SpawnModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/spawn.lua"))()
+    end)
+    if not success or not SpawnModule then
+        printToTerminal("Failed to load Spawn module")
     else
-        local ok, msg = WaypointsModule.Teleport(player, arg)
-        printToTerminal(msg)
-    end
-
--- /listwaypoints
-elseif cmd == "/listwaypoints" then
-    if not WaypointsModule then return end
-    local names = WaypointsModule.List(player)
-    if #names == 0 then
-        printToTerminal("No waypoints set")
-    else
-        printToTerminal("Waypoints: "..table.concat(names, ", "))
-    end
-
--- /delwaypoint
-elseif cmd == "/delwaypoint" then
-    if not WaypointsModule then return end
-    if arg == "" then
-        printToTerminal("Usage: /delwaypoint <name>")
-    else
-        local ok, msg = WaypointsModule.Delete(player, arg)
+        local ok, msg = SpawnModule.Teleport(player)
         printToTerminal(msg)
     end
 
