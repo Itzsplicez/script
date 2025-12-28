@@ -737,7 +737,24 @@ elseif cmd == "/serverhop" then
         printToTerminal("Failed to load ServerHop module")
     end
 
-                
+elseif cmd == "/time" then
+    local mode = arg -- "day" or "night"
+    local Lighting = game:GetService("Lighting")
+
+    if mode == "day" then
+        Lighting.ClockTime = 14 -- 2 PM
+        Lighting.Brightness = 2
+        Lighting.FogEnd = 100000
+        printToTerminal("Time set to day")
+    elseif mode == "night" then
+        Lighting.ClockTime = 2 -- 2 AM
+        Lighting.Brightness = 0.5
+        Lighting.FogEnd = 100000
+        printToTerminal("Time set to night")
+    else
+        printToTerminal("Invalid argument! Use /time day or /time night")
+    end
+      
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
