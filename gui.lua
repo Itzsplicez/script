@@ -806,7 +806,70 @@ elseif cmd == "/teamaimbot" then
         printToTerminal("TeamAimbot enabled (ignoring teammates)")
     end
 
-      
+elseif cmd == "/setwaypoint" or cmd == "/swp" then
+    -- Load the module only when the command is used
+    local success, WaypointsModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/waypoints.lua"))()
+    end)
+    if not success or not WaypointsModule then
+        printToTerminal("Failed to load Waypoints module")
+    else
+        if arg == "" then
+            printToTerminal("Usage: /setwaypoint <name>")
+        else
+            local ok, msg = WaypointsModule.Set(player, arg)
+            printToTerminal(msg)
+        end
+    end
+
+elseif cmd == "/waypoint" then
+    -- Load the module only when the command is used
+    local success, WaypointsModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/waypoints.lua"))()
+    end)
+    if not success or not WaypointsModule then
+        printToTerminal("Failed to load Waypoints module")
+    else
+        if arg == "" then
+            printToTerminal("Usage: /waypoint <name>")
+        else
+            local ok, msg = WaypointsModule.Teleport(player, arg)
+            printToTerminal(msg)
+        end
+    end
+
+elseif cmd == "/listwaypoints" then
+    -- Load the module only when the command is used
+    local success, WaypointsModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/waypoints.lua"))()
+    end)
+    if not success or not WaypointsModule then
+        printToTerminal("Failed to load Waypoints module")
+    else
+        local names = WaypointsModule.List(player)
+        if #names == 0 then
+            printToTerminal("No waypoints set")
+        else
+            printToTerminal("Waypoints: "..table.concat(names, ", "))
+        end
+    end
+
+elseif cmd == "/delwaypoint" then
+    -- Load the module only when the command is used
+    local success, WaypointsModule = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/waypoints.lua"))()
+    end)
+    if not success or not WaypointsModule then
+        printToTerminal("Failed to load Waypoints module")
+    else
+        if arg == "" then
+            printToTerminal("Usage: /delwaypoint <name>")
+        else
+            local ok, msg = WaypointsModule.Delete(player, arg)
+            printToTerminal(msg)
+        end
+    end
+
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
