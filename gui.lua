@@ -267,6 +267,7 @@ local commands = {
     "/jumpboost",
     "/noclip",
     "/reset",
+    "/serverhop",
     "/spin",
     "/speed",
     "/teleport",
@@ -716,6 +717,24 @@ elseif cmd == "/rejoin" then
         printToTerminal("Rejoining current server...")
     else
         printToTerminal("Failed to load Rejoin module")
+    end
+
+elseif cmd == "/serverhop" then
+    local mode = arg -- can be "full" or "small"
+    if mode ~= "full" and mode ~= "small" then
+        printToTerminal("Usage: /serverhop full OR /serverhop small")
+        return
+    end
+
+    local success, sh = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/serverhop.lua"))()
+    end)
+
+    if success and sh then
+        sh.Hop(mode)
+        printToTerminal("Attempting to serverhop ("..mode..")...")
+    else
+        printToTerminal("Failed to load ServerHop module")
     end
 
                 
