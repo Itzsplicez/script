@@ -1,8 +1,7 @@
--- aimbot.lua (camera assist)
+-- aimbot.lua (dynamic closest-player aimbot)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -10,13 +9,15 @@ local camera = workspace.CurrentCamera
 local Aimbot = {}
 local enabled = false
 local connection
-local smoothness = 0.15 -- lower = snappier
+local smoothness = 0.15 -- lower = faster snap
+local maxDistance = 1000 -- studs (optional limit)
 
--- Get closest player to crosshair
+-- Get closest player by 3D distance
 local function getClosestPlayer()
-    local closestPlayer
+    local closestHRP = nil
     local closestDist = math.huge
-    local mousePos = UserInputService:GetMouseLocation()
+
+    local camPos = camera.CFrame.Position
 
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= player and plr.Character then
@@ -24,19 +25,16 @@ local function getClosestPlayer()
             local hum = plr.Character:FindFirstChild("Humanoid")
 
             if hrp and hum and hum.Health > 0 then
-                local screenPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-                if onScreen then
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-                    if dist < closestDist then
-                        closestDist = dist
-                        closestPlayer = hrp
-                    end
+                local dist = (hrp.Position - camPos).Magnitude
+                if dist < closestDist and dist <= maxDistance then
+                    closestDist = dist
+                    closestHRP = hrp
                 end
             end
         end
     end
 
-    return closestPlayer
+    return closestHRP
 end
 
 function Aimbot.Start()
@@ -49,8 +47,8 @@ function Aimbot.Start()
         local target = getClosestPlayer()
         if target then
             local camCFrame = camera.CFrame
-            local targetCFrame = CFrame.new(camCFrame.Position, target.Position)
-            camera.CFrame = camCFrame:Lerp(targetCFrame, smoothness)
+            local newCFrame = CFrame.new(camCFrame.Position, target.Position)
+            camera.CFrame = camCFrame:Lerp(newCFrame, smoothness)
         end
     end)
 end
@@ -64,7 +62,11 @@ function Aimbot.Stop()
 end
 
 function Aimbot.SetSmoothness(value)
-    smoothness = math.clamp(value or 0.15, 0.05, 1)
+    smoothness = math.clamp(tonumber(value) or 0.15, 0.05, 1)
+end
+
+function Aimbot.SetMaxDistance(dist)
+    maxDistance = tonumber(dist) or maxDistance
 end
 
 return Aimbot
