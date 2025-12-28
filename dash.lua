@@ -11,8 +11,9 @@ local dashDuration = 0.2
 local isDashing = false
 local dashTime = 0
 local forwardVector = Vector3.new(0,0,0)
-local inputConnection
 local dashButton
+local inputConnection
+local heartbeatConnection
 local originalCFrame
 
 -- Helper to get HRP
@@ -35,9 +36,10 @@ end
 
 -- Create GUI button
 local function createButton()
-    if dashButton then return end
-
     local gui = player:WaitForChild("PlayerGui")
+
+    if dashButton then dashButton:Destroy() end
+
     dashButton = Instance.new("TextButton")
     dashButton.Size = UDim2.new(0,120,0,60)
     dashButton.Position = UDim2.new(0.5, -60, 0.85, 0)
@@ -52,8 +54,6 @@ local function createButton()
     dashButton.MouseButton1Click:Connect(startDash)
 end
 
-createButton()
-
 -- Keyboard input
 inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
@@ -63,7 +63,6 @@ inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- Heartbeat loop
-local heartbeatConnection
 heartbeatConnection = RunService.Heartbeat:Connect(function(delta)
     if isDashing then
         local hrp = getHRP()
@@ -82,21 +81,21 @@ heartbeatConnection = RunService.Heartbeat:Connect(function(delta)
         dashTime = dashTime + delta
         if dashTime >= dashDuration then
             isDashing = false
-            Camera.CFrame = originalCFrame -- reset camera
+            Camera.CFrame = originalCFrame
         end
     end
 end)
 
--- Stop function
+-- Stop dash
 function Dash.Stop()
-    if heartbeatConnection then
-        heartbeatConnection:Disconnect()
-        heartbeatConnection = nil
-    end
-
     if inputConnection then
         inputConnection:Disconnect()
         inputConnection = nil
+    end
+
+    if heartbeatConnection then
+        heartbeatConnection:Disconnect()
+        heartbeatConnection = nil
     end
 
     if dashButton then
@@ -109,5 +108,8 @@ function Dash.Stop()
         Camera.CFrame = originalCFrame
     end
 end
+
+-- Initialize
+createButton()
 
 return Dash
