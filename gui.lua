@@ -270,12 +270,13 @@ local commands = {
     "/serverhop",
     "/spin",
     "/speed",
+    "/swimfly",
+    "/spectate",
+    "/time",
     "/teleport",
     "/tptool",
     "/tacos",
     "/rejoin",
-    "/swimfly",
-    "/spectate",
 }
 
 -- Terminal command execution
