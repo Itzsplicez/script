@@ -755,6 +755,31 @@ elseif cmd == "/time" then
     else
         printToTerminal("Invalid argument! Use /time day or /time night")
     end
+
+elseif cmd == "/aimbot" then
+    if not _G.AimbotModule then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet(
+                "https://raw.githubusercontent.com/Itzsplicez/script/main/aimbot.lua"
+            ))()
+        end)
+
+        if success then
+            _G.AimbotModule = mod
+        else
+            printToTerminal("Failed to load aimbot module")
+            return
+        end
+    end
+
+    if arg == "off" then
+        _G.AimbotModule.Stop()
+        printToTerminal("Aimbot disabled")
+    else
+        _G.AimbotModule.Start()
+        printToTerminal("Aimbot enabled (closest target)")
+    end
+
       
         else
             printToTerminal("Unknown command: "..inputBox.Text)
