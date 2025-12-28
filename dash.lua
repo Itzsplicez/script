@@ -15,11 +15,8 @@ local inputConnection
 
 -- Helper to get HumanoidRootPart
 local function getHRP()
-    local char = player.Character
-    if char then
-        return char:FindFirstChild("HumanoidRootPart")
-    end
-    return nil
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
 end
 
 -- Dash function
@@ -50,12 +47,15 @@ local function doDash()
 end
 
 -- Keyboard dash (Shift key)
-inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    if input.KeyCode == Enum.KeyCode.LeftShift then
-        doDash()
-    end
-end)
+local function setupInput()
+    inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
+        if processed then return end
+        if input.KeyCode == Enum.KeyCode.LeftShift then
+            doDash()
+        end
+    end)
+end
+setupInput()
 
 -- Mobile GUI button
 local function createButton()
@@ -63,8 +63,8 @@ local function createButton()
 
     local gui = player:WaitForChild("PlayerGui")
     dashButton = Instance.new("TextButton")
-    dashButton.Size = UDim2.new(0, 100, 0, 50)
-    dashButton.Position = UDim2.new(0.5, -50, 0.8, 0)
+    dashButton.Size = UDim2.new(0, 120, 0, 60)
+    dashButton.Position = UDim2.new(0.5, -60, 0.85, 0)
     dashButton.AnchorPoint = Vector2.new(0.5, 0)
     dashButton.BackgroundColor3 = Color3.fromRGB(128, 0, 255)
     dashButton.Text = "Dash"
@@ -78,7 +78,7 @@ local function createButton()
     dashButton.MouseButton1Click:Connect(doDash)
 end
 
--- Only show button if on mobile
+-- Show mobile button if touch enabled
 if UserInputService.TouchEnabled then
     createButton()
 end
