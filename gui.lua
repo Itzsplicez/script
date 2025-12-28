@@ -269,6 +269,8 @@ local commands = {
     "/noclip",
     "/reset",
     "/serverhop",
+    "/setspawn",
+    "/spawn",
     "/spin",
     "/speed",
     "/swimfly",
