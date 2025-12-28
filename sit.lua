@@ -1,10 +1,6 @@
--- Sit module test
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
+-- sit.lua
 local SitModule = {}
 
--- Toggle sit
 function SitModule.Toggle(player)
     local char = player.Character
     if not char or not char:FindFirstChild("Humanoid") then
@@ -15,6 +11,4 @@ function SitModule.Toggle(player)
     return true, humanoid.Sit and "Sitting now" or "Standing up"
 end
 
--- Test it
-local ok, msg = SitModule.Toggle(player)
-print(msg)
+return SitModule
