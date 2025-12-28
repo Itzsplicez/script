@@ -860,6 +860,28 @@ elseif cmd == "/follow" then
         end
     end
 
+elseif cmd == "/slowfall" then
+    if not _G.SlowFallModule then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/slowfall.lua"))()
+        end)
+
+        if success and mod then
+            _G.SlowFallModule = mod
+        else
+            printToTerminal("Failed to load SlowFall module")
+            return
+        end
+    end
+
+    if arg == "off" then
+        _G.SlowFallModule.Stop()
+        printToTerminal("SlowFall disabled")
+    else
+        _G.SlowFallModule.Start()
+        printToTerminal("SlowFall enabled (swimming effect)")
+    end
+
 
         else
             printToTerminal("Unknown command: "..inputBox.Text)
