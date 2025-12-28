@@ -1,7 +1,6 @@
 -- Waypoints Module
 local Players = game:GetService("Players")
 
--- Only create the module once globally
 if not _G.WaypointsModule then
     local Waypoints = {}
     local playerWaypoints = {}
