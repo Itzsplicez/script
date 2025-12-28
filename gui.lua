@@ -272,7 +272,6 @@ local commands = {
     "/setspawn",
     "/spawn",
     "/spin",
-    "/sit",
     "/speed",
     "/swimfly",
     "/spectate",
@@ -832,16 +831,35 @@ elseif cmd == "/spawn" then
         printToTerminal(msg)
     end
 
-elseif cmd == "/sit" then
-    local success, SitModuleOrError = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/sit.lua"))()
-    end)
-    if not success or not SitModuleOrError then
-        printToTerminal("Failed to load Sit module: " .. tostring(SitModuleOrError))
-    else
-        local ok, msg = SitModuleOrError.Toggle(player)
-        printToTerminal(msg)
+-- Inside your inputBox.FocusLost:Connect(function(enterPressed)
+if cmd == "/follow" then
+    -- Load Follow module once
+    if not _G.FollowModule then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/YourRepo/follow.lua"))()
+        end)
+
+        if success and mod then
+            _G.FollowModule = mod
+        else
+            printToTerminal("Failed to load Follow module")
+            return
+        end
     end
+
+    if arg == "off" then
+        _G.FollowModule.Stop()
+        printToTerminal("Follow disabled")
+    else
+        local targetPlayer = getPlayerFromArg(arg)
+        if targetPlayer then
+            _G.FollowModule.Start(targetPlayer)
+            printToTerminal("Now following " .. targetPlayer.Name)
+        else
+            printToTerminal("Player not found: " .. arg)
+        end
+    end
+end
 
 
         else
