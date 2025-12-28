@@ -5,10 +5,8 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 local Dash = {}
-local canDash = true
 local dashSpeed = 100
 local dashDuration = 0.2
-local cooldown = 1
 local dashConnection
 local dashButton
 local inputConnection
@@ -21,11 +19,9 @@ end
 
 -- Dash function
 local function doDash()
-    if not canDash then return end
     local hrp = getHRP()
     if not hrp then return end
 
-    canDash = false
     local forward = hrp.CFrame.LookVector
     local startTime = tick()
 
@@ -38,24 +34,15 @@ local function doDash()
             hrp.Velocity = forward * dashSpeed + Vector3.new(0, hrp.Velocity.Y, 0)
         end
     end)
-
-    -- Cooldown
-    spawn(function()
-        wait(cooldown)
-        canDash = true
-    end)
 end
 
 -- Keyboard dash (Shift key)
-local function setupInput()
-    inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
-        if processed then return end
-        if input.KeyCode == Enum.KeyCode.LeftShift then
-            doDash()
-        end
-    end)
-end
-setupInput()
+inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.LeftShift then
+        doDash()
+    end
+end)
 
 -- Mobile GUI button
 local function createButton()
@@ -85,19 +72,16 @@ end
 
 -- Stop function
 function Dash.Stop()
-    -- Disconnect dash heartbeat
     if dashConnection then
         dashConnection:Disconnect()
         dashConnection = nil
     end
 
-    -- Disconnect keyboard input
     if inputConnection then
         inputConnection:Disconnect()
         inputConnection = nil
     end
 
-    -- Destroy mobile button
     if dashButton then
         dashButton:Destroy()
         dashButton = nil
