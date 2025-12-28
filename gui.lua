@@ -273,6 +273,7 @@ local commands = {
     "/speed",
     "/swimfly",
     "/spectate",
+    "/teamaimbot",
     "/time",
     "/teleport",
     "/tptool",
@@ -779,6 +780,30 @@ elseif cmd == "/aimbot" then
     else
         _G.AimbotModule.Start()
         printToTerminal("Aimbot enabled (closest target)")
+    end
+
+elseif cmd == "/teamaimbot" then
+    if not _G.TeamAimbot then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet(
+                "https://raw.githubusercontent.com/Itzsplicez/script/main/teamaimbot.lua"
+            ))()
+        end)
+
+        if not success or not mod then
+            printToTerminal("Failed to load TeamAimbot")
+            return
+        end
+
+        _G.TeamAimbot = mod
+    end
+
+    if arg == "off" then
+        _G.TeamAimbot.Stop()
+        printToTerminal("TeamAimbot disabled")
+    else
+        _G.TeamAimbot.Start()
+        printToTerminal("TeamAimbot enabled (ignoring teammates)")
     end
 
       
