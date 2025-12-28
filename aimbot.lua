@@ -1,8 +1,5 @@
--- aimbot.lua (camera + third-person facing + forced shift-lock)
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -16,9 +13,8 @@ local maxDistance = 1000
 local humanoid
 local hrp
 local oldAutoRotate
-local oldMouseBehavior
 
--- Get closest player by 3D distance
+-- Find closest player by 3D distance
 local function getClosestTarget()
     local closestHRP
     local closestDist = math.huge
@@ -50,27 +46,19 @@ function Aimbot.Start()
     humanoid = char:WaitForChild("Humanoid")
     hrp = char:WaitForChild("HumanoidRootPart")
 
-    -- Save states
+    -- Disable AutoRotate so we can control character rotation
     oldAutoRotate = humanoid.AutoRotate
-    oldMouseBehavior = UserInputService.MouseBehavior
-
-    -- Force shift-lock
     humanoid.AutoRotate = false
-    UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 
     connection = RunService.RenderStepped:Connect(function()
         if not enabled then return end
 
         local target = getClosestTarget()
         if target and hrp then
-            -- Camera look
-            local camCF = camera.CFrame
-            local camTargetCF = CFrame.new(camCF.Position, target.Position)
-            camera.CFrame = camCF:Lerp(camTargetCF, smoothness)
-
-            -- Character facing (Y-axis only)
-            local lookPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
-            hrp.CFrame = CFrame.new(hrp.Position, lookPos)
+            -- Rotate player toward target (Y-axis only)
+            local direction = (Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z) - hrp.Position).Unit
+            local lookCFrame = CFrame.new(hrp.Position, hrp.Position + direction)
+            hrp.CFrame = hrp.CFrame:Lerp(lookCFrame, smoothness)
         end
     end)
 end
@@ -83,12 +71,10 @@ function Aimbot.Stop()
         connection = nil
     end
 
-    -- Restore states
+    -- Restore AutoRotate
     if humanoid then
         humanoid.AutoRotate = oldAutoRotate ~= false
     end
-
-    UserInputService.MouseBehavior = oldMouseBehavior or Enum.MouseBehavior.Default
 end
 
 function Aimbot.SetSmoothness(value)
