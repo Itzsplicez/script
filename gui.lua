@@ -256,6 +256,7 @@ makeDraggable(mini)
 
 -- Commands
 local commands = {
+    "/aimbot",
     "/clear",
     "/doors",
     "/esp",
