@@ -263,6 +263,7 @@ local commands = {
     "/fly",
     "/float",
     "/fling",
+    "/follow",
     "/help",
     "/infjump",
     "/jumpboost",
@@ -831,8 +832,7 @@ elseif cmd == "/spawn" then
         printToTerminal(msg)
     end
 
--- Inside your inputBox.FocusLost:Connect(function(enterPressed)
-if cmd == "/follow" then
+elseif cmd == "/follow" then
     -- Load Follow module once
     if not _G.FollowModule then
         local success, mod = pcall(function()
@@ -859,7 +859,6 @@ if cmd == "/follow" then
             printToTerminal("Player not found: " .. arg)
         end
     end
-end
 
 
         else
