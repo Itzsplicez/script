@@ -882,7 +882,27 @@ elseif cmd == "/slowfall" then
         printToTerminal("SlowFall enabled (swimming effect)")
     end
 
+elseif cmd == "/dash" then
+    if not _G.DashModule then
+        local success, mod = pcall(function()
+            return loadstring(game:HttpGet("https://raw.githubusercontent.com/Itzsplicez/script/main/dash.lua"))()
+        end)
 
+        if success and mod then
+            _G.DashModule = mod
+        else
+            printToTerminal("Failed to load Dash module")
+            return
+        end
+    end
+
+    if arg == "off" then
+        _G.DashModule.Stop()
+        printToTerminal("Dash disabled")
+    else
+        printToTerminal("Dash enabled! Press Left Shift (or tap button on mobile) to dash")
+    end
+                
         else
             printToTerminal("Unknown command: "..inputBox.Text)
         end
