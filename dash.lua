@@ -1,20 +1,18 @@
--- dash.lua
+-- dash_module.lua
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
 
-local Dash = {}
+local DashModule = {}
 local dashSpeed = 100
 local dashDuration = 0.2
 local isDashing = false
 local dashTime = 0
 local forwardVector = Vector3.new(0,0,0)
 local dashButton
-local inputConnection
 local heartbeatConnection
-local originalCFrame
+local inputConnection
 
 -- Helper to get HRP
 local function getHRP()
@@ -31,13 +29,11 @@ local function startDash()
     forwardVector = hrp.CFrame.LookVector
     isDashing = true
     dashTime = 0
-    originalCFrame = Camera.CFrame
 end
 
 -- Create GUI button
 local function createButton()
     local gui = player:WaitForChild("PlayerGui")
-
     if dashButton then dashButton:Destroy() end
 
     dashButton = Instance.new("TextButton")
@@ -68,48 +64,32 @@ heartbeatConnection = RunService.Heartbeat:Connect(function(delta)
         local hrp = getHRP()
         if not hrp then return end
 
-        -- Move player
         hrp.Velocity = forwardVector * dashSpeed + Vector3.new(0, hrp.Velocity.Y, 0)
-
-        -- Screen shake
-        local magnitude = 0.1
-        local shakeX = (math.random() - 0.5) * magnitude
-        local shakeY = (math.random() - 0.5) * magnitude
-        local shakeZ = (math.random() - 0.5) * magnitude
-        Camera.CFrame = originalCFrame * CFrame.new(shakeX, shakeY, shakeZ)
-
         dashTime = dashTime + delta
         if dashTime >= dashDuration then
             isDashing = false
-            Camera.CFrame = originalCFrame
         end
     end
 end)
 
--- Stop dash
-function Dash.Stop()
-    if inputConnection then
-        inputConnection:Disconnect()
-        inputConnection = nil
-    end
+-- Initialize button
+createButton()
 
-    if heartbeatConnection then
-        heartbeatConnection:Disconnect()
-        heartbeatConnection = nil
-    end
-
+-- Stop function for /dash off
+function DashModule.Stop()
     if dashButton then
         dashButton:Destroy()
         dashButton = nil
     end
-
-    isDashing = false
-    if Camera and originalCFrame then
-        Camera.CFrame = originalCFrame
+    if inputConnection then
+        inputConnection:Disconnect()
+        inputConnection = nil
     end
+    if heartbeatConnection then
+        heartbeatConnection:Disconnect()
+        heartbeatConnection = nil
+    end
+    isDashing = false
 end
 
--- Initialize
-createButton()
-
-return Dash
+return DashModule
