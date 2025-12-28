@@ -1,7 +1,8 @@
--- aimbot.lua (camera + third-person character facing)
+-- aimbot.lua (camera + third-person facing + forced shift-lock)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -15,10 +16,11 @@ local maxDistance = 1000
 local humanoid
 local hrp
 local oldAutoRotate
+local oldMouseBehavior
 
 -- Get closest player by 3D distance
 local function getClosestTarget()
-    local closestHRP = nil
+    local closestHRP
     local closestDist = math.huge
     local camPos = camera.CFrame.Position
 
@@ -48,21 +50,25 @@ function Aimbot.Start()
     humanoid = char:WaitForChild("Humanoid")
     hrp = char:WaitForChild("HumanoidRootPart")
 
-    -- Disable Roblox auto rotation
+    -- Save states
     oldAutoRotate = humanoid.AutoRotate
+    oldMouseBehavior = UserInputService.MouseBehavior
+
+    -- Force shift-lock
     humanoid.AutoRotate = false
+    UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 
     connection = RunService.RenderStepped:Connect(function()
         if not enabled then return end
 
         local target = getClosestTarget()
         if target and hrp then
-            -- Camera rotation
+            -- Camera look
             local camCF = camera.CFrame
             local camTargetCF = CFrame.new(camCF.Position, target.Position)
             camera.CFrame = camCF:Lerp(camTargetCF, smoothness)
 
-            -- Character rotation (Y-axis only)
+            -- Character facing (Y-axis only)
             local lookPos = Vector3.new(target.Position.X, hrp.Position.Y, target.Position.Z)
             hrp.CFrame = CFrame.new(hrp.Position, lookPos)
         end
@@ -77,10 +83,12 @@ function Aimbot.Stop()
         connection = nil
     end
 
-    -- Restore character rotation
+    -- Restore states
     if humanoid then
         humanoid.AutoRotate = oldAutoRotate ~= false
     end
+
+    UserInputService.MouseBehavior = oldMouseBehavior or Enum.MouseBehavior.Default
 end
 
 function Aimbot.SetSmoothness(value)
