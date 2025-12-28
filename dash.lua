@@ -44,7 +44,7 @@ inputConnection = UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Mobile GUI button
+-- Create GUI button for everyone
 local function createButton()
     if dashButton then return end
 
@@ -65,10 +65,7 @@ local function createButton()
     dashButton.MouseButton1Click:Connect(doDash)
 end
 
--- Show mobile button if touch enabled
-if UserInputService.TouchEnabled then
-    createButton()
-end
+createButton() -- always create button, PC or mobile
 
 -- Stop function
 function Dash.Stop()
